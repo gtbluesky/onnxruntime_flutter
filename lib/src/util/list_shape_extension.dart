@@ -153,12 +153,12 @@ extension ListShape on List {
     return flat;
   }
 
-  String elementType() {
+  dynamic element() {
     var list = this as dynamic;
     while (list is List && !list.isByteBuffer()) {
       list = list.elementAt(0);
     }
-    return list.runtimeType.toString();
+    return list;
   }
 
   bool isByteBuffer() {

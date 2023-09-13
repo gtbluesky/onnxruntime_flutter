@@ -1,4 +1,5 @@
 import 'dart:ffi' as ffi;
+import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:onnxruntime/src/bindings/onnxruntime_bindings_generated.dart'
@@ -9,8 +10,8 @@ import 'package:onnxruntime/src/util/list_shape_extension.dart';
 
 abstract class OrtValue {
   late ffi.Pointer<bindings.OrtValue> _ptr;
-
   ffi.Pointer<bindings.OrtValue> get ptr => _ptr;
+  int get address => _ptr.address;
 
   Object? get value;
 
@@ -215,6 +216,10 @@ class OrtValueTensor extends OrtValue {
     _info = OrtTensorTypeAndShapeInfo(ptr);
   }
 
+  factory OrtValueTensor.fromAddress(int address) {
+    return OrtValueTensor(ffi.Pointer.fromAddress(address));
+  }
+
   static OrtValueTensor _createTensorWithString(String data) {
     return _createTensorWithStringList(<String>[data], []);
   }
@@ -270,12 +275,12 @@ class OrtValueTensor extends OrtValue {
 
   static OrtValueTensor createTensorWithDataList(List data, [List<int>? shape]) {
     shape ??= data.shape;
-    final elementType = data.elementType();
+    final element = data.element();
     var dataType = ONNXTensorElementDataType.undefined;
     ffi.Pointer<ffi.Void> dataPtr = ffi.nullptr;
     int dataSize = 0;
     int dataByteCount = 0;
-    if (elementType == 'Uint8List') {
+    if (element is Uint8List) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.uint8;
@@ -283,7 +288,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize;
-    } else if (elementType == 'Int8List') {
+    } else if (element is Int8List) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.int8;
@@ -291,7 +296,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize;
-    } else if (elementType == 'Uint16List') {
+    } else if (element is Uint16List) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.uint16;
@@ -299,7 +304,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 2;
-    } else if (elementType == 'Int16List') {
+    } else if (element is Int16List) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.int16;
@@ -307,7 +312,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 2;
-    } else if (elementType == 'Uint32List') {
+    } else if (element is Uint32List) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.uint32;
@@ -315,7 +320,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 4;
-    } else if (elementType == 'Int32List') {
+    } else if (element is Int32List) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.int32;
@@ -323,7 +328,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 4;
-    } else if (elementType == 'Uint64List') {
+    } else if (element is Uint64List) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.uint64;
@@ -331,7 +336,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 8;
-    } else if (elementType == 'Int64List' || elementType == 'int') {
+    } else if (element is Int64List || element is int) {
       final flattenData = data.flatten<int>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.int64;
@@ -339,7 +344,7 @@ class OrtValueTensor extends OrtValue {
         ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 8;
-    } else if (elementType == 'Float32List') {
+    } else if (element is Float32List) {
       final flattenData = data.flatten<double>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.float;
@@ -347,7 +352,7 @@ class OrtValueTensor extends OrtValue {
             ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 4;
-    } else if (elementType == 'Float64List' || elementType == 'double') {
+    } else if (element is Float64List || element is double) {
       final flattenData = data.flatten<double>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.double;
@@ -355,7 +360,7 @@ class OrtValueTensor extends OrtValue {
         ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 8;
-    } else if (elementType == 'bool') {
+    } else if (element is bool) {
       final flattenData = data.flatten<bool>();
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.bool;
@@ -365,7 +370,7 @@ class OrtValueTensor extends OrtValue {
       }
       dataPtr = ptr.cast();
       dataByteCount = dataSize;
-    } else if (elementType == 'String') {
+    } else if (element is String) {
       return _createTensorWithStringList(data.cast<String>(), shape);
     } else {
       throw Exception('Invalid inputTensor element type.');
@@ -504,6 +509,10 @@ class OrtValueSequence extends OrtValue {
     calloc.free(onnxTypePtr);
   }
 
+  OrtValueSequence.fromAddress(int address) {
+    _ptr = ffi.Pointer.fromAddress(address);
+  }
+
   @override
   List<OrtValue>? get value {
     if (_onnxType == ONNXType.map) {
@@ -548,6 +557,10 @@ class OrtValueMap extends OrtValue {
     final infoMap = _createMapInfo(ptr);
     _keyInfo = infoMap.entries.first.key;
     _valueInfo = infoMap.entries.first.value;
+  }
+
+  OrtValueMap.fromAddress(int address) {
+    _ptr = ffi.Pointer.fromAddress(address);
   }
 
   @override
@@ -622,6 +635,10 @@ class OrtValueSparseTensor extends OrtValue {
     OrtStatus.checkOrtStatus(statusPtr);
     _ortSparseFormat = OrtSparseFormat.valueOf(ortSparseFormatPtr.value);
     calloc.free(ortSparseFormatPtr);
+  }
+
+  OrtValueSparseTensor.fromAddress(int address) {
+    _ptr = ffi.Pointer.fromAddress(address);
   }
 
   @override

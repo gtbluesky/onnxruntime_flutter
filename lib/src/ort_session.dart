@@ -8,6 +8,7 @@ import 'package:onnxruntime/src/bindings/bindings.dart';
 import 'package:onnxruntime/src/bindings/onnxruntime_bindings_generated.dart'
     as bindings;
 import 'package:onnxruntime/src/ort_env.dart';
+import 'package:onnxruntime/src/ort_isolate_session.dart';
 import 'package:onnxruntime/src/ort_status.dart';
 import 'package:onnxruntime/src/ort_value.dart';
 import 'package:onnxruntime/src/ort_provider.dart';
@@ -19,6 +20,8 @@ class OrtSession {
   late List<String> _inputNames;
   late int _outputCount;
   late List<String> _outputNames;
+  late OrtIsolateSession _isolateSession;
+  int get address => _ptr.address;
 
   OrtSession.fromFile(File modelFile, OrtSessionOptions options) {
     final pp = calloc<ffi.Pointer<bindings.OrtSession>>();
@@ -36,6 +39,7 @@ class OrtSession {
     _ptr = pp.value;
     calloc.free(pp);
     _init();
+    _isolateSession = OrtIsolateSession(this);
   }
 
   OrtSession.fromBuffer(Uint8List modelBuffer, OrtSessionOptions options) {
@@ -55,6 +59,12 @@ class OrtSession {
     _ptr = pp.value;
     calloc.free(pp);
     calloc.free(bufferPtr);
+    _init();
+    _isolateSession = OrtIsolateSession(this);
+  }
+
+  OrtSession.fromAddress(int address) {
+    _ptr = ffi.Pointer.fromAddress(address);
     _init();
   }
 
@@ -193,7 +203,12 @@ class OrtSession {
     return outputs;
   }
 
-  release() {
+  Future<List<OrtValue?>>? runAsync(OrtRunOptions runOptions, Map<String, OrtValue> inputs, [List<String>? outputNames]) {
+    return _isolateSession.run(runOptions, inputs, outputNames);
+  }
+
+    release() {
+    _isolateSession.release();
     OrtEnv.instance.ortApiPtr.ref.ReleaseSession.asFunction<void Function(ffi.Pointer<bindings.OrtSession>)>()(_ptr);
   }
 }
@@ -318,9 +333,14 @@ class OrtSessionOptions {
 
 class OrtRunOptions {
   late ffi.Pointer<bindings.OrtRunOptions> _ptr;
+  int get address => _ptr.address;
 
   OrtRunOptions() {
     _create();
+  }
+
+  OrtRunOptions.fromAddress(int address) {
+    _ptr = ffi.Pointer.fromAddress(address);
   }
 
   _create() {

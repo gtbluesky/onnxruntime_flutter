@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 class RecordManager {
-  final int _sampleRate = 16000;
+  static const int sampleRate = 16000;
   final _numChannels = 1;
   final int _bitsPerSample = 16;
   String? _pcmPath;
@@ -30,14 +29,12 @@ class RecordManager {
       print('event=$event');
     });
     _amplitudeSub = _record.onAmplitudeChanged(const Duration(milliseconds: 100)).listen((event) {
-      final volume = event.current + 90;
       print('Volume: ${event.current} dBFS');
-      print('Volume: $volume dB');
     });
     final fileName = DateTime.now().millisecondsSinceEpoch.toString();
     _pcmPath = '${(await getTemporaryDirectory()).path}/$fileName.pcm';
     _wavPath = '${(await getTemporaryDirectory()).path}/$fileName.wav';
-    _record.start(path: _pcmPath, encoder: AudioEncoder.pcm16bit, samplingRate: _sampleRate, numChannels: _numChannels);
+    _record.start(path: _pcmPath, encoder: AudioEncoder.pcm16bit, samplingRate: sampleRate, numChannels: _numChannels);
     return [_pcmPath!, _wavPath!];
   }
 
@@ -77,8 +74,8 @@ class RecordManager {
     wavHeader.setUint32(16, 16, Endian.little); // Subchunk1Size
     wavHeader.setUint16(20, 1, Endian.little); // AudioFormat
     wavHeader.setUint16(22, _numChannels, Endian.little); // NumChannels
-    wavHeader.setUint32(24, _sampleRate, Endian.little); // SampleRate
-    wavHeader.setUint32(28, _sampleRate * _numChannels * _bitsPerSample ~/ 8,
+    wavHeader.setUint32(24, sampleRate, Endian.little); // SampleRate
+    wavHeader.setUint32(28, sampleRate * _numChannels * _bitsPerSample ~/ 8,
         Endian.little); // ByteRate
     wavHeader.setUint16(
         32, _numChannels * _bitsPerSample ~/ 8, Endian.little); // BlockAlign

@@ -25,11 +25,15 @@ class _MyAppState extends State<MyApp> {
   String? _wavPath;
   AudioPlayer? _audioPlayer;
   VadIterator? _vadIterator;
+  static const frameSize = 64;
 
   @override
   void initState() {
     super.initState();
     _version = OrtEnv.version;
+
+    _vadIterator = VadIterator(frameSize, RecordManager.sampleRate);
+    _vadIterator?.initModel();
   }
 
   @override
@@ -106,26 +110,27 @@ class _MyAppState extends State<MyApp> {
 
   infer() async {
     // final startTime = DateTime.now().millisecondsSinceEpoch;
+    // print('out=${(await ModelTypeTest.testBool())[0].value}');
     // print('out=${(await ModelTypeTest.testFloat())[0].value}');
+    // print('out=${(await ModelTypeTest.testInt64())[0].value}');
+    // print('out=${(await ModelTypeTest.testString())[0].value}');
     // final endTime = DateTime.now().millisecondsSinceEpoch;
     // print('infer cost time=${endTime - startTime}ms');
-
-    const frameSize = 64;
-    const sampleRate = 16000;
-    _vadIterator = VadIterator(frameSize, sampleRate);
-    await _vadIterator?.initModel();
+    const windowByteCount = frameSize * 2 * RecordManager.sampleRate ~/ 1000;
     final bytes = await File(_pcmPath!).readAsBytes();
-    final frameBuffer = <int>[...bytes];
+    var start = 0;
+    var end = start + windowByteCount;
+    List<int> frameBuffer;
     final startTime = DateTime.now().millisecondsSinceEpoch;
-    const windowByteCount = frameSize * 2 * sampleRate ~/ 1000;
-    while (frameBuffer.length >= windowByteCount) {
-      final data = frameBuffer.take(windowByteCount).toList();
-      frameBuffer.removeRange(0, windowByteCount);
+    while(end <= bytes.length) {
+      frameBuffer = bytes.sublist(start, end).toList();
       final floatBuffer =
-          _transformBuffer(data).map((e) => e / 32768).toList();
-      _vadIterator?.predict(Float32List.fromList(floatBuffer));
+      _transformBuffer(frameBuffer).map((e) => e / 32768).toList();
+      await _vadIterator?.predict(Float32List.fromList(floatBuffer));
+      start += windowByteCount;
+      end = start + windowByteCount;
     }
-    _vadIterator?.release();
+    _vadIterator?.reset();
     final endTime = DateTime.now().millisecondsSinceEpoch;
     print('vad cost time=${endTime - startTime}ms');
   }
@@ -133,5 +138,11 @@ class _MyAppState extends State<MyApp> {
   Int16List _transformBuffer(List<int> buffer) {
     final bytes = Uint8List.fromList(buffer);
     return Int16List.view(bytes.buffer);
+  }
+
+  @override
+  void dispose() {
+    _vadIterator?.release();
+    super.dispose();
   }
 }
