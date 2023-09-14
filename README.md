@@ -1,92 +1,74 @@
-# onnxruntime
+<p align="center"><img width="50%" src="https://github.com/microsoft/onnxruntime/raw/main/docs/images/ONNX_Runtime_logo_dark.png" /></p>
 
-A new Flutter FFI plugin project.
+# OnnxRuntime Plugin
+[![pub package](https://img.shields.io/pub/v/onnxruntime.svg)](https://pub.dev/packages/onnxruntime)
+
+
+## Overview
+
+Flutter plugin for OnnxRuntime with `FFI` provides an easy, flexible, and fast Dart API to integrate Onnx models in flutter apps across mobile and desktop platforms.
+
+## Key Features
+
+* Multi-platform Support for Android and iOS
+* Flexibility to use any Onnx Model.
+* Acceleration using multi-threading.
+* Similar structure as OnnxRuntime Java and C# API.
+* Inference speeds close to native Android/iOS Apps built using the Java/Objective-C API.
+* Run inference in different isolates to prevent jank in UI thread.
 
 ## Getting Started
 
-This project is a starting point for a Flutter
-[FFI plugin](https://docs.flutter.dev/development/platform-integration/c-interop),
-a specialized package that includes native code directly invoked with Dart FFI.
+In your flutter project add the dependency:
 
-## Project structure
-
-This template uses the following structure:
-
-* `src`: Contains the native source code, and a CmakeFile.txt file for building
-  that source code into a dynamic library.
-
-* `lib`: Contains the Dart code that defines the API of the plugin, and which
-  calls into the native code using `dart:ffi`.
-
-* platform folders (`android`, `ios`, `windows`, etc.): Contains the build files
-  for building and bundling the native code library with the platform application.
-
-## Building and bundling native code
-
-The `pubspec.yaml` specifies FFI plugins as follows:
-
-```yaml
-  plugin:
-    platforms:
-      some_platform:
-        ffiPlugin: true
+```yml
+dependencies:
+  ...
+  onnxruntime:
 ```
 
-This configuration invokes the native build for the various target platforms
-and bundles the binaries in Flutter applications using these FFI plugins.
+For help getting started with Flutter, view the online
+[documentation](https://flutter.io/).
 
-This can be combined with dartPluginClass, such as when FFI is used for the
-implementation of one platform in a federated plugin:
+## Usage example
 
-```yaml
-  plugin:
-    implements: some_other_plugin
-    platforms:
-      some_platform:
-        dartPluginClass: SomeClass
-        ffiPlugin: true
+### Import
+
+```dart
+import 'package:onnxruntime/onnxruntime.dart';
 ```
 
-A plugin can have both FFI and method channels:
+### Initializing environment
 
-```yaml
-  plugin:
-    platforms:
-      some_platform:
-        pluginClass: SomeName
-        ffiPlugin: true
+```dart
+OrtEnv.instance.init();
 ```
 
-The native build systems that are invoked by FFI (and method channel) plugins are:
+### Creating the Session
 
-* For Android: Gradle, which invokes the Android NDK for native builds.
-  * See the documentation in android/build.gradle.
-* For iOS and MacOS: Xcode, via CocoaPods.
-  * See the documentation in ios/onnxruntime.podspec.
-  * See the documentation in macos/onnxruntime.podspec.
-* For Linux and Windows: CMake.
-  * See the documentation in linux/CMakeLists.txt.
-  * See the documentation in windows/CMakeLists.txt.
+```dart
+final sessionOptions = OrtSessionOptions();
+const assetFileName = 'assets/models/test.onnx';
+final rawAssetFile = await rootBundle.load(assetFileName);
+final bytes = rawAssetFile.buffer.asUint8List();
+final session = OrtSession.fromBuffer(bytes, sessionOptions!);
+```
 
-## Binding to native code
+### Performing inference
 
-To use the native code, bindings in Dart are needed.
-To avoid writing these by hand, they are generated from the header file
-(`src/onnxruntime.h`) by `package:ffigen`.
-Regenerate the bindings by running `flutter pub run ffigen --config ffigen.yaml`.
+```dart
+final shape = [1, 2, 3];
+final inputOrt = OrtValueTensor.createTensorWithDataList(data, shape);
+final inputs = {'input': inputOrt};
+final runOptions = OrtRunOptions();
+final outputs = await _session?.runAsync(runOptions, inputs);
+inputOrt.release();
+runOptions.release();
+```
 
-## Invoking native code
+### Releasing environment
 
-Very short-running native functions can be directly invoked from any isolate.
-For example, see `sum` in `lib/onnxruntime.dart`.
-
-Longer-running functions should be invoked on a helper isolate to avoid
-dropping frames in Flutter applications.
-For example, see `sumAsync` in `lib/onnxruntime.dart`.
-
-## Flutter help
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```dart
+OrtEnv.instance.release();
+```
 
