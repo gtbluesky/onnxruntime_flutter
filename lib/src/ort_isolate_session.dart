@@ -11,19 +11,23 @@ class OrtIsolateSession {
   late SendPort _newIsolateSendPort;
   late StreamSubscription _streamSubscription;
   final _outputController = StreamController<List<MapEntry>>.broadcast();
+
   IsolateSessionState get state => _state;
   var _state = IsolateSessionState.idle;
 
-  OrtIsolateSession(OrtSession session, {
+  OrtIsolateSession(
+    OrtSession session, {
     this.debugName = 'OnnxRuntimeSessionIsolate',
-  }): address = session.address {
+  }) : address = session.address {
     _init();
   }
 
   Future<void> _init() async {
     final rootIsolateReceivePort = ReceivePort();
     final rootIsolateSendPort = rootIsolateReceivePort.sendPort;
-    _newIsolate = await Isolate.spawn(createNewIsolateContext, rootIsolateSendPort, debugName: debugName);
+    _newIsolate = await Isolate.spawn(
+        createNewIsolateContext, rootIsolateSendPort,
+        debugName: debugName);
     _streamSubscription = rootIsolateReceivePort.listen((message) {
       if (message is SendPort) {
         _newIsolateSendPort = message;
@@ -34,14 +38,16 @@ class OrtIsolateSession {
     });
   }
 
-  static Future<void> createNewIsolateContext(SendPort rootIsolateSendPort) async {
+  static Future<void> createNewIsolateContext(
+      SendPort rootIsolateSendPort) async {
     final newIsolateReceivePort = ReceivePort();
     final newIsolateSendPort = newIsolateReceivePort.sendPort;
     rootIsolateSendPort.send(newIsolateSendPort);
     await for (final _IsolateSessionData data in newIsolateReceivePort) {
       final session = OrtSession.fromAddress(data.session);
       final runOptions = OrtRunOptions.fromAddress(data.runOptions);
-      final inputs = data.inputs.map((key, value) => MapEntry(key, OrtValueTensor.fromAddress(value)));
+      final inputs = data.inputs.map(
+          (key, value) => MapEntry(key, OrtValueTensor.fromAddress(value)));
       final outputNames = data.outputNames;
       final outputs = session.run(runOptions, inputs, outputNames).map((e) {
         ONNXType onnxType;
@@ -62,10 +68,17 @@ class OrtIsolateSession {
     }
   }
 
-  Future<List<OrtValue?>> run(OrtRunOptions runOptions, Map<String, OrtValue> inputs, [List<String>? outputNames]) async {
-    final transformedInputs = inputs.map((key, value) => MapEntry(key, value.address));
+  Future<List<OrtValue?>> run(
+      OrtRunOptions runOptions, Map<String, OrtValue> inputs,
+      [List<String>? outputNames]) async {
+    final transformedInputs =
+        inputs.map((key, value) => MapEntry(key, value.address));
     _state = IsolateSessionState.loading;
-    final data = _IsolateSessionData(session: address, runOptions: runOptions.address, inputs: transformedInputs, outputNames: outputNames);
+    final data = _IsolateSessionData(
+        session: address,
+        runOptions: runOptions.address,
+        inputs: transformedInputs,
+        outputNames: outputNames);
     _newIsolateSendPort.send(data);
     late List<OrtValue?> outputs;
     await for (final result in _outputController.stream) {
@@ -96,7 +109,6 @@ class OrtIsolateSession {
     await _outputController.close();
     _newIsolate.kill();
   }
-
 }
 
 enum IsolateSessionState {
@@ -105,12 +117,11 @@ enum IsolateSessionState {
 }
 
 class _IsolateSessionData {
-  _IsolateSessionData({
-    required this.session,
-    required this.runOptions,
-    required this.inputs,
-    this.outputNames
-  });
+  _IsolateSessionData(
+      {required this.session,
+      required this.runOptions,
+      required this.inputs,
+      this.outputNames});
 
   final int session;
   final int runOptions;

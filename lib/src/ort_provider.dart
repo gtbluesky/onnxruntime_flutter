@@ -1,5 +1,4 @@
 enum OrtProvider {
-
   cpu('CPUExecutionProvider'),
   coreml('CoreMLExecutionProvider'),
   nnapi('NnapiExecutionProvider'),

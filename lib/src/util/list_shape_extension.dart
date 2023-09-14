@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 extension ListShape on List {
-
   /// Reshape list to a another [shape]
   ///
   /// [T] is the type of elements in list
@@ -32,12 +31,13 @@ extension ListShape on List {
     }
 
     var reshapedList = flatten<dynamic>();
+
     /// dims > 5
     for (var i = dims - 1; i > 0; i--) {
       var temp = [];
       for (var start = 0;
-      start + shape[i] <= reshapedList.length;
-      start += shape[i]) {
+          start + shape[i] <= reshapedList.length;
+          start += shape[i]) {
         temp.add(reshapedList.sublist(start, start + shape[i]));
       }
       reshapedList = temp;
@@ -49,9 +49,9 @@ extension ListShape on List {
     var flatList = flatten<T>();
     List<List<T>> reshapedList = List.generate(
       shape[0],
-          (i) => List.generate(
+      (i) => List.generate(
         shape[1],
-            (j) => flatList[i * shape[1] + j],
+        (j) => flatList[i * shape[1] + j],
       ),
     );
 
@@ -62,11 +62,11 @@ extension ListShape on List {
     var flatList = flatten<T>();
     List<List<List<T>>> reshapedList = List.generate(
       shape[0],
-          (i) => List.generate(
+      (i) => List.generate(
         shape[1],
-            (j) => List.generate(
+        (j) => List.generate(
           shape[2],
-              (k) => flatList[i * shape[1] * shape[2] + j * shape[2] + k],
+          (k) => flatList[i * shape[1] * shape[2] + j * shape[2] + k],
         ),
       ),
     );
@@ -79,13 +79,13 @@ extension ListShape on List {
 
     List<List<List<List<T>>>> reshapedList = List.generate(
       shape[0],
-          (i) => List.generate(
+      (i) => List.generate(
         shape[1],
-            (j) => List.generate(
+        (j) => List.generate(
           shape[2],
-              (k) => List.generate(
+          (k) => List.generate(
             shape[3],
-                (l) => flatList[i * shape[1] * shape[2] * shape[3] +
+            (l) => flatList[i * shape[1] * shape[2] * shape[3] +
                 j * shape[2] * shape[3] +
                 k * shape[3] +
                 l],
@@ -101,15 +101,15 @@ extension ListShape on List {
     var flatList = flatten<T>();
     List<List<List<List<List<T>>>>> reshapedList = List.generate(
       shape[0],
-          (i) => List.generate(
+      (i) => List.generate(
         shape[1],
-            (j) => List.generate(
+        (j) => List.generate(
           shape[2],
-              (k) => List.generate(
+          (k) => List.generate(
             shape[3],
-                (l) => List.generate(
+            (l) => List.generate(
               shape[4],
-                  (m) => flatList[i * shape[1] * shape[2] * shape[3] * shape[4] +
+              (m) => flatList[i * shape[1] * shape[2] * shape[3] * shape[4] +
                   j * shape[2] * shape[3] * shape[4] +
                   k * shape[3] * shape[4] +
                   l * shape[4] +

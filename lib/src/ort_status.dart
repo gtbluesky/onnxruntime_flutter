@@ -6,7 +6,6 @@ import 'package:onnxruntime/src/bindings/onnxruntime_bindings_generated.dart'
 import 'package:onnxruntime/src/ort_env.dart';
 
 class OrtStatus {
-
   OrtStatus._();
 
   static void checkOrtStatus(bindings.OrtStatusPtr? ptr) {

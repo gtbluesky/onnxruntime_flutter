@@ -10,7 +10,9 @@ import 'package:onnxruntime/src/util/list_shape_extension.dart';
 
 abstract class OrtValue {
   late ffi.Pointer<bindings.OrtValue> _ptr;
+
   ffi.Pointer<bindings.OrtValue> get ptr => _ptr;
+
   int get address => _ptr.address;
 
   Object? get value;
@@ -49,9 +51,10 @@ abstract class OrtValue {
   ffi.Pointer<T> _getTensorMutableData<T extends ffi.NativeType>(
       ffi.Pointer<bindings.OrtValue> ortValuePtr,
       ffi.Pointer<ffi.Pointer<T>> dataPtrPtr) {
-    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorMutableData.asFunction<
-            bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
-                ffi.Pointer<ffi.Pointer<ffi.Void>>)>()(
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorMutableData
+            .asFunction<
+                bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
+                    ffi.Pointer<ffi.Pointer<ffi.Void>>)>()(
         ortValuePtr, dataPtrPtr.cast());
     OrtStatus.checkOrtStatus(statusPtr);
     return dataPtrPtr.value;
@@ -61,9 +64,10 @@ abstract class OrtValue {
     final info = OrtTensorTypeAndShapeInfo(ortValuePtr);
     final tensorShapeElementCount = info._tensorShapeElementCount;
     final dataLengthPtr = calloc<ffi.Size>();
-    var statusPtr = OrtEnv.instance.ortApiPtr.ref.GetStringTensorDataLength.asFunction<
-        bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
-            ffi.Pointer<ffi.Size>)>()(ortValuePtr, dataLengthPtr);
+    var statusPtr = OrtEnv.instance.ortApiPtr.ref.GetStringTensorDataLength
+        .asFunction<
+            bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
+                ffi.Pointer<ffi.Size>)>()(ortValuePtr, dataLengthPtr);
     OrtStatus.checkOrtStatus(statusPtr);
     final dataLength = dataLengthPtr.value;
     calloc.free(dataLengthPtr);
@@ -80,11 +84,13 @@ abstract class OrtValue {
         offsetPtr,
         tensorShapeElementCount);
     OrtStatus.checkOrtStatus(statusPtr);
-    statusPtr = OrtEnv.instance.ortApiPtr.ref.GetStringTensorDataLength.asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtValue>, ffi.Pointer<ffi.Size>)>()(
+    statusPtr = OrtEnv.instance.ortApiPtr.ref.GetStringTensorDataLength
+            .asFunction<
+                bindings.OrtStatusPtr Function(
+                    ffi.Pointer<bindings.OrtValue>, ffi.Pointer<ffi.Size>)>()(
         ortValuePtr,
-        ffi.Pointer.fromAddress(offsetPtr.address + tensorShapeElementCount * ffi.sizeOf<ffi.Size>()));
+        ffi.Pointer.fromAddress(offsetPtr.address +
+            tensorShapeElementCount * ffi.sizeOf<ffi.Size>()));
     OrtStatus.checkOrtStatus(statusPtr);
     final list = <String>[];
     for (int i = 0; i < tensorShapeElementCount; ++i) {
@@ -224,20 +230,22 @@ class OrtValueTensor extends OrtValue {
     return _createTensorWithStringList(<String>[data], []);
   }
 
-  static OrtValueTensor _createTensorWithStringList(List<String> data, [List<int>? shape]) {
+  static OrtValueTensor _createTensorWithStringList(List<String> data,
+      [List<int>? shape]) {
     final ortValuePtrPtr = calloc<ffi.Pointer<bindings.OrtValue>>();
     shape ??= data.shape;
     final shapeSize = shape.length;
     final shapePtr = calloc<ffi.Int64>(shapeSize);
     shapePtr.asTypedList(shapeSize).setRange(0, shapeSize, shape);
 
-    var statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateTensorAsOrtValue.asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtAllocator>,
-                ffi.Pointer<ffi.Int64> shape,
-                int,
-                int,
-                ffi.Pointer<ffi.Pointer<bindings.OrtValue>>)>()(
+    var statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateTensorAsOrtValue
+            .asFunction<
+                bindings.OrtStatusPtr Function(
+                    ffi.Pointer<bindings.OrtAllocator>,
+                    ffi.Pointer<ffi.Int64> shape,
+                    int,
+                    int,
+                    ffi.Pointer<ffi.Pointer<bindings.OrtValue>>)>()(
         OrtAllocator.instance.ptr,
         shapePtr,
         shapeSize,
@@ -247,9 +255,10 @@ class OrtValueTensor extends OrtValue {
     final ortValuePtr = ortValuePtrPtr.value;
     for (int i = 0; i < data.length; ++i) {
       final str = data[i].toNativeUtf8().cast<ffi.Char>();
-      statusPtr = OrtEnv.instance.ortApiPtr.ref.FillStringTensorElement.asFunction<
-          bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
-              ffi.Pointer<ffi.Char>, int)>()(ortValuePtr, str, i);
+      statusPtr = OrtEnv.instance.ortApiPtr.ref.FillStringTensorElement
+          .asFunction<
+              bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
+                  ffi.Pointer<ffi.Char>, int)>()(ortValuePtr, str, i);
       OrtStatus.checkOrtStatus(statusPtr);
     }
     calloc.free(ortValuePtrPtr);
@@ -273,7 +282,8 @@ class OrtValueTensor extends OrtValue {
     throw Exception('Invalid element type');
   }
 
-  static OrtValueTensor createTensorWithDataList(List data, [List<int>? shape]) {
+  static OrtValueTensor createTensorWithDataList(List data,
+      [List<int>? shape]) {
     shape ??= data.shape;
     final element = data.element();
     var dataType = ONNXTensorElementDataType.undefined;
@@ -341,7 +351,7 @@ class OrtValueTensor extends OrtValue {
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.int64;
       dataPtr = (calloc<ffi.Int64>(dataSize)
-        ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
+            ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 8;
     } else if (element is Float32List) {
@@ -357,7 +367,7 @@ class OrtValueTensor extends OrtValue {
       dataSize = flattenData.length;
       dataType = ONNXTensorElementDataType.double;
       dataPtr = (calloc<ffi.Double>(dataSize)
-        ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
+            ..asTypedList(dataSize).setRange(0, dataSize, flattenData))
           .cast();
       dataByteCount = dataSize * 8;
     } else if (element is bool) {
@@ -382,8 +392,8 @@ class OrtValueTensor extends OrtValue {
 
     final ortMemoryInfoPtrPtr = calloc<ffi.Pointer<bindings.OrtMemoryInfo>>();
     var statusPtr = OrtEnv.instance.ortApiPtr.ref.AllocatorGetInfo.asFunction<
-        bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtAllocator>,
-            ffi.Pointer<ffi.Pointer<bindings.OrtMemoryInfo>>)>()(
+            bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtAllocator>,
+                ffi.Pointer<ffi.Pointer<bindings.OrtMemoryInfo>>)>()(
         OrtAllocator.instance.ptr, ortMemoryInfoPtrPtr);
     OrtStatus.checkOrtStatus(statusPtr);
     // or
@@ -395,15 +405,16 @@ class OrtValueTensor extends OrtValue {
     //     ortMemoryInfoPtrPtr);
     final ortMemoryInfoPtr = ortMemoryInfoPtrPtr.value;
     final ortValuePtrPtr = calloc<ffi.Pointer<bindings.OrtValue>>();
-    statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateTensorWithDataAsOrtValue.asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtMemoryInfo>,
-                ffi.Pointer<ffi.Void>,
-                int,
-                ffi.Pointer<ffi.Int64>,
-                int,
-                int,
-                ffi.Pointer<ffi.Pointer<bindings.OrtValue>>)>()(
+    statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateTensorWithDataAsOrtValue
+            .asFunction<
+                bindings.OrtStatusPtr Function(
+                    ffi.Pointer<bindings.OrtMemoryInfo>,
+                    ffi.Pointer<ffi.Void>,
+                    int,
+                    ffi.Pointer<ffi.Int64>,
+                    int,
+                    int,
+                    ffi.Pointer<ffi.Pointer<bindings.OrtValue>>)>()(
         ortMemoryInfoPtr,
         dataPtr,
         dataByteCount,
@@ -530,14 +541,14 @@ class OrtValueSequence extends OrtValue {
         case ONNXTensorElementDataType.int64:
         case ONNXTensorElementDataType.float:
         case ONNXTensorElementDataType.double:
-        final tensors = <OrtValueTensor>[];
-        for (int i = 0; i < _valueCount; ++i) {
-          final ortValuePtrPtr = calloc<ffi.Pointer<bindings.OrtValue>>();
-          final ortValuePtr = _getOrtValue(_ptr, i, ortValuePtrPtr);
-          tensors.add(OrtValueTensor(ortValuePtr));
-          calloc.free(ortValuePtrPtr);
-        }
-        return tensors;
+          final tensors = <OrtValueTensor>[];
+          for (int i = 0; i < _valueCount; ++i) {
+            final ortValuePtrPtr = calloc<ffi.Pointer<bindings.OrtValue>>();
+            final ortValuePtr = _getOrtValue(_ptr, i, ortValuePtrPtr);
+            tensors.add(OrtValueTensor(ortValuePtr));
+            calloc.free(ortValuePtrPtr);
+          }
+          return tensors;
         default:
           throw Exception(
               'Unsupported type in a sequence, found ${_tensorInfo?._tensorElementType}');
@@ -629,9 +640,10 @@ class OrtValueSparseTensor extends OrtValue {
     _ptr = ptr;
     _info = OrtTensorTypeAndShapeInfo(ptr);
     final ortSparseFormatPtr = calloc<ffi.Int32>();
-    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetSparseTensorFormat.asFunction<
-        bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
-            ffi.Pointer<ffi.Int32>)>()(ptr, ortSparseFormatPtr);
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetSparseTensorFormat
+        .asFunction<
+            bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtValue>,
+                ffi.Pointer<ffi.Int32>)>()(ptr, ortSparseFormatPtr);
     OrtStatus.checkOrtStatus(statusPtr);
     _ortSparseFormat = OrtSparseFormat.valueOf(ortSparseFormatPtr.value);
     calloc.free(ortSparseFormatPtr);
@@ -667,12 +679,14 @@ class OrtTensorTypeAndShapeInfo {
   List<int> _tensorShape = [];
 
   OrtTensorTypeAndShapeInfo(ffi.Pointer<bindings.OrtValue> ortValuePtr) {
-    final infoPtrPtr = calloc<ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>>();
-    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorTypeAndShape.asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtValue>,
-                ffi.Pointer<
-                    ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>>)>()(
+    final infoPtrPtr =
+        calloc<ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>>();
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorTypeAndShape
+            .asFunction<
+                bindings.OrtStatusPtr Function(
+                    ffi.Pointer<bindings.OrtValue>,
+                    ffi.Pointer<
+                        ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>>)>()(
         ortValuePtr, infoPtrPtr);
     OrtStatus.checkOrtStatus(statusPtr);
     final infoPtr = infoPtrPtr.value;
@@ -688,10 +702,12 @@ class OrtTensorTypeAndShapeInfo {
   static ONNXTensorElementDataType _getTensorElementType(
       ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo> infoPtr) {
     final onnxTensorElementDataTypePtr = calloc<ffi.Int32>();
-    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorElementType.asFunction<
-        bindings.OrtStatusPtr Function(
-            ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>,
-            ffi.Pointer<ffi.Int32>)>()(infoPtr, onnxTensorElementDataTypePtr);
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorElementType
+            .asFunction<
+                bindings.OrtStatusPtr Function(
+                    ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>,
+                    ffi.Pointer<ffi.Int32>)>()(
+        infoPtr, onnxTensorElementDataTypePtr);
     OrtStatus.checkOrtStatus(statusPtr);
     final onnxTensorElementDataType = onnxTensorElementDataTypePtr.value;
     calloc.free(onnxTensorElementDataTypePtr);
@@ -708,10 +724,11 @@ class OrtTensorTypeAndShapeInfo {
   static int _getDimensionsCount(
       ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo> infoPtr) {
     final countPtr = calloc<ffi.Size>();
-    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetDimensionsCount.asFunction<
-        bindings.OrtStatusPtr Function(
-            ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>,
-            ffi.Pointer<ffi.Size>)>()(infoPtr, countPtr);
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetDimensionsCount
+        .asFunction<
+            bindings.OrtStatusPtr Function(
+                ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>,
+                ffi.Pointer<ffi.Size>)>()(infoPtr, countPtr);
     OrtStatus.checkOrtStatus(statusPtr);
     final count = countPtr.value;
     calloc.free(countPtr);
@@ -736,10 +753,11 @@ class OrtTensorTypeAndShapeInfo {
   static int _getTensorShapeElementCount(
       ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo> infoPtr) {
     final countPtr = calloc<ffi.Size>();
-    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorShapeElementCount.asFunction<
-        bindings.OrtStatusPtr Function(
-            ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>,
-            ffi.Pointer<ffi.Size>)>()(infoPtr, countPtr);
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.GetTensorShapeElementCount
+        .asFunction<
+            bindings.OrtStatusPtr Function(
+                ffi.Pointer<bindings.OrtTensorTypeAndShapeInfo>,
+                ffi.Pointer<ffi.Size>)>()(infoPtr, countPtr);
     OrtStatus.checkOrtStatus(statusPtr);
     final count = countPtr.value;
     calloc.free(countPtr);
