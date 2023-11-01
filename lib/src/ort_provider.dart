@@ -1,3 +1,4 @@
+/// An enumerated value of ort provider.
 enum OrtProvider {
   cpu('CPUExecutionProvider'),
   coreml('CoreMLExecutionProvider'),

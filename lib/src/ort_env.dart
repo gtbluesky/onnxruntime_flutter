@@ -2,45 +2,53 @@ import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart';
 import 'package:onnxruntime/src/bindings/bindings.dart';
 import 'package:onnxruntime/src/bindings/onnxruntime_bindings_generated.dart'
-    as bindings;
+    as bg;
 import 'package:onnxruntime/src/ort_provider.dart';
 import 'package:onnxruntime/src/ort_status.dart';
 
+/// A class about onnx runtime environment.
 class OrtEnv {
   static final OrtEnv _instance = OrtEnv._();
 
   static OrtEnv get instance => _instance;
 
-  ffi.Pointer<bindings.OrtEnv>? _ptr;
+  ffi.Pointer<bg.OrtEnv>? _ptr;
 
-  late ffi.Pointer<bindings.OrtApi> _ortApiPtr;
+  late ffi.Pointer<bg.OrtApi> _ortApiPtr;
+
+  static OrtApiVersion _apiVersion = OrtApiVersion.api14;
 
   OrtEnv._() {
     _ortApiPtr = onnxRuntimeBinding.OrtGetApiBase()
-            .ref
-            .GetApi
-            .asFunction<ffi.Pointer<bindings.OrtApi> Function(int)>()(
-        _OrtApiVersion.api14.value);
+        .ref
+        .GetApi
+        .asFunction<ffi.Pointer<bg.OrtApi> Function(int)>()(_apiVersion.value);
   }
 
+  /// Set ort's api version.
+  static setApiVersion(OrtApiVersion apiVersion) {
+    _apiVersion = apiVersion;
+  }
+
+  /// Initialize the onnx runtime environment.
   init(
       {OrtLoggingLevel level = OrtLoggingLevel.warning,
       String logId = 'DartOnnxRuntime',
       OrtThreadingOptions? options}) {
-    final pp = calloc<ffi.Pointer<bindings.OrtEnv>>();
-    bindings.OrtStatusPtr statusPtr;
+    final pp = calloc<ffi.Pointer<bg.OrtEnv>>();
+    bg.OrtStatusPtr statusPtr;
     if (options == null) {
       statusPtr = _ortApiPtr.ref.CreateEnv.asFunction<
-              bindings.OrtStatusPtr Function(int, ffi.Pointer<ffi.Char>,
-                  ffi.Pointer<ffi.Pointer<bindings.OrtEnv>>)>()(
+              bg.OrtStatusPtr Function(int, ffi.Pointer<ffi.Char>,
+                  ffi.Pointer<ffi.Pointer<bg.OrtEnv>>)>()(
           level.value, logId.toNativeUtf8().cast<ffi.Char>(), pp);
     } else {
       statusPtr = _ortApiPtr.ref.CreateEnvWithGlobalThreadPools.asFunction<
-              bindings.OrtStatusPtr Function(
+              bg.OrtStatusPtr Function(
                   int,
                   ffi.Pointer<ffi.Char>,
-                  ffi.Pointer<bindings.OrtThreadingOptions>,
-                  ffi.Pointer<ffi.Pointer<bindings.OrtEnv>>)>()(
+                  ffi.Pointer<bg.OrtThreadingOptions>,
+                  ffi.Pointer<ffi.Pointer<bg.OrtEnv>>)>()(
           level.value, logId.toNativeUtf8().cast<ffi.Char>(), options._ptr, pp);
     }
     OrtStatus.checkOrtStatus(statusPtr);
@@ -49,15 +57,17 @@ class OrtEnv {
     calloc.free(pp);
   }
 
+  /// Release the onnx runtime environment.
   release() {
     if (_ptr == null) {
       return;
     }
     _ortApiPtr.ref.ReleaseEnv
-        .asFunction<void Function(ffi.Pointer<bindings.OrtEnv>)>()(_ptr!);
+        .asFunction<void Function(ffi.Pointer<bg.OrtEnv>)>()(_ptr!);
     _ptr = null;
   }
 
+  /// Gets the version of onnx runtime.
   static String get version => onnxRuntimeBinding.OrtGetApiBase()
       .ref
       .GetVersionString
@@ -65,20 +75,21 @@ class OrtEnv {
       .cast<Utf8>()
       .toDartString();
 
-  ffi.Pointer<bindings.OrtApi> get ortApiPtr => _ortApiPtr;
+  ffi.Pointer<bg.OrtApi> get ortApiPtr => _ortApiPtr;
 
-  ffi.Pointer<bindings.OrtEnv> get ptr {
+  ffi.Pointer<bg.OrtEnv> get ptr {
     if (_ptr == null) {
       init();
     }
     return _ptr!;
   }
 
+  /// Gets all available providers.
   List<OrtProvider> availableProviders() {
     final providersPtr = calloc<ffi.Pointer<ffi.Pointer<ffi.Char>>>();
     final lengthPtr = calloc<ffi.Int>();
     var statusPtr = ortApiPtr.ref.GetAvailableProviders.asFunction<
-        bindings.OrtStatusPtr Function(
+        bg.OrtStatusPtr Function(
             ffi.Pointer<ffi.Pointer<ffi.Pointer<ffi.Char>>>,
             ffi.Pointer<ffi.Int>)>()(providersPtr, lengthPtr);
     OrtStatus.checkOrtStatus(statusPtr);
@@ -88,7 +99,7 @@ class OrtEnv {
       return OrtProvider.valueOf(provider);
     });
     statusPtr = ortApiPtr.ref.ReleaseAvailableProviders.asFunction<
-        bindings.OrtStatusPtr Function(ffi.Pointer<ffi.Pointer<ffi.Char>>,
+        bg.OrtStatusPtr Function(ffi.Pointer<ffi.Pointer<ffi.Char>>,
             int)>()(providersPtr.value, lengthPtr.value);
     OrtStatus.checkOrtStatus(statusPtr);
     calloc.free(providersPtr);
@@ -101,35 +112,36 @@ class OrtEnv {
       init();
     }
     final status = _ortApiPtr.ref.SetLanguageProjection.asFunction<
-        bindings.OrtStatusPtr Function(ffi.Pointer<bindings.OrtEnv>,
-            int)>()(_ptr!, bindings.OrtLanguageProjection.ORT_PROJECTION_C);
+            bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtEnv>, int)>()(
+        _ptr!, bg.OrtLanguageProjection.ORT_PROJECTION_C);
     OrtStatus.checkOrtStatus(status);
   }
 }
 
-enum _OrtApiVersion {
+/// An enumerated value of api's version.
+enum OrtApiVersion {
   /// The initial release of the ORT API.
   api1(1),
 
   /// Post 1.0 builds of the ORT API.
   api2(2),
 
-  /// Post 1.3 builds of the ORT API
+  /// Post 1.3 builds of the ORT API.
   api3(3),
 
-  /// Post 1.6 builds of the ORT API
+  /// Post 1.6 builds of the ORT API.
   api7(7),
 
-  /// Post 1.7 builds of the ORT API
+  /// Post 1.7 builds of the ORT API.
   api8(8),
 
-  /// Post 1.10 builds of the ORT API
+  /// Post 1.10 builds of the ORT API.
   api11(11),
 
-  /// Post 1.12 builds of the ORT API
+  /// Post 1.12 builds of the ORT API.
   api13(13),
 
-  /// Post 1.13 builds of the ORT API
+  /// Post 1.13 builds of the ORT API.
   api14(14),
 
   /// The initial release of the ORT training API.
@@ -137,67 +149,69 @@ enum _OrtApiVersion {
 
   final int value;
 
-  const _OrtApiVersion(this.value);
+  const OrtApiVersion(this.value);
 }
 
+/// An enumerated value of log's level.
 enum OrtLoggingLevel {
-  verbose(bindings.OrtLoggingLevel.ORT_LOGGING_LEVEL_VERBOSE),
-  info(bindings.OrtLoggingLevel.ORT_LOGGING_LEVEL_INFO),
-  warning(bindings.OrtLoggingLevel.ORT_LOGGING_LEVEL_WARNING),
-  error(bindings.OrtLoggingLevel.ORT_LOGGING_LEVEL_ERROR),
-  fatal(bindings.OrtLoggingLevel.ORT_LOGGING_LEVEL_FATAL);
+  verbose(bg.OrtLoggingLevel.ORT_LOGGING_LEVEL_VERBOSE),
+  info(bg.OrtLoggingLevel.ORT_LOGGING_LEVEL_INFO),
+  warning(bg.OrtLoggingLevel.ORT_LOGGING_LEVEL_WARNING),
+  error(bg.OrtLoggingLevel.ORT_LOGGING_LEVEL_ERROR),
+  fatal(bg.OrtLoggingLevel.ORT_LOGGING_LEVEL_FATAL);
 
   final int value;
 
   const OrtLoggingLevel(this.value);
 }
 
+/// A class obout thread's options.
 class OrtThreadingOptions {
-  late ffi.Pointer<bindings.OrtThreadingOptions> _ptr;
+  late ffi.Pointer<bg.OrtThreadingOptions> _ptr;
 
   OrtThreadingOptions() {
     _create();
   }
 
   _create() {
-    final pp = calloc<ffi.Pointer<bindings.OrtThreadingOptions>>();
+    final pp = calloc<ffi.Pointer<bg.OrtThreadingOptions>>();
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateThreadingOptions
         .asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<ffi.Pointer<bindings.OrtThreadingOptions>>)>()(pp);
+            bg.OrtStatusPtr Function(
+                ffi.Pointer<ffi.Pointer<bg.OrtThreadingOptions>>)>()(pp);
     OrtStatus.checkOrtStatus(statusPtr);
     _ptr = pp.value;
     calloc.free(pp);
   }
 
   release() {
-    OrtEnv.instance.ortApiPtr.ref.ReleaseThreadingOptions.asFunction<
-        void Function(ffi.Pointer<bindings.OrtThreadingOptions>)>()(_ptr);
+    OrtEnv.instance.ortApiPtr.ref.ReleaseThreadingOptions
+        .asFunction<void Function(ffi.Pointer<bg.OrtThreadingOptions>)>()(_ptr);
   }
 
+  /// Sets the number of global intra op threads.
   setGlobalIntraOpNumThreads(int numThreads) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalIntraOpNumThreads
         .asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtThreadingOptions>,
-                int)>()(_ptr, numThreads);
+            bg.OrtStatusPtr Function(
+                ffi.Pointer<bg.OrtThreadingOptions>, int)>()(_ptr, numThreads);
     OrtStatus.checkOrtStatus(statusPtr);
   }
 
+  /// Sets the number of global inter op threads.
   setGlobalInterOpNumThreads(int numThreads) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalInterOpNumThreads
         .asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtThreadingOptions>,
-                int)>()(_ptr, numThreads);
+            bg.OrtStatusPtr Function(
+                ffi.Pointer<bg.OrtThreadingOptions>, int)>()(_ptr, numThreads);
     OrtStatus.checkOrtStatus(statusPtr);
   }
 
+  /// Sets the global spin control.
   setGlobalSpinControl(bool allowSpinning) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalSpinControl
         .asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtThreadingOptions>,
+            bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtThreadingOptions>,
                 int)>()(_ptr, allowSpinning ? 1 : 0);
     OrtStatus.checkOrtStatus(statusPtr);
   }
@@ -205,16 +219,16 @@ class OrtThreadingOptions {
   setGlobalDenormalAsZero() {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalDenormalAsZero
         .asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<bindings.OrtThreadingOptions>)>()(_ptr);
+            bg.OrtStatusPtr Function(
+                ffi.Pointer<bg.OrtThreadingOptions>)>()(_ptr);
     OrtStatus.checkOrtStatus(statusPtr);
   }
 
+  /// Sets the global intra op thread affinity.
   setGlobalIntraOpThreadAffinity(String affinity) {
     final statusPtr =
         OrtEnv.instance.ortApiPtr.ref.SetGlobalIntraOpThreadAffinity.asFunction<
-                bindings.OrtStatusPtr Function(
-                    ffi.Pointer<bindings.OrtThreadingOptions>,
+                bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtThreadingOptions>,
                     ffi.Pointer<ffi.Char>)>()(
             _ptr, affinity.toNativeUtf8().cast<ffi.Char>());
     OrtStatus.checkOrtStatus(statusPtr);
@@ -222,20 +236,20 @@ class OrtThreadingOptions {
 }
 
 class OrtAllocator {
-  late ffi.Pointer<bindings.OrtAllocator> _ptr;
+  late ffi.Pointer<bg.OrtAllocator> _ptr;
 
   static final OrtAllocator _instance = OrtAllocator._();
 
   static OrtAllocator get instance => _instance;
 
-  ffi.Pointer<bindings.OrtAllocator> get ptr => _ptr;
+  ffi.Pointer<bg.OrtAllocator> get ptr => _ptr;
 
   OrtAllocator._() {
-    final pp = calloc<ffi.Pointer<bindings.OrtAllocator>>();
+    final pp = calloc<ffi.Pointer<bg.OrtAllocator>>();
     final statusPtr =
         OrtEnv.instance.ortApiPtr.ref.GetAllocatorWithDefaultOptions.asFunction<
-            bindings.OrtStatusPtr Function(
-                ffi.Pointer<ffi.Pointer<bindings.OrtAllocator>>)>()(pp);
+            bg.OrtStatusPtr Function(
+                ffi.Pointer<ffi.Pointer<bg.OrtAllocator>>)>()(pp);
     OrtStatus.checkOrtStatus(statusPtr);
     _ptr = pp.value;
     calloc.free(pp);

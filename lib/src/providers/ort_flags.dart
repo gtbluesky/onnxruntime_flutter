@@ -2,6 +2,7 @@ abstract class OrtFlags {
   int get value;
 }
 
+/// A flag for [OrtProvider.cpu].
 enum CPUFlags implements OrtFlags {
   useNone(0x000),
   useArena(0x001);
@@ -14,6 +15,7 @@ enum CPUFlags implements OrtFlags {
   int get value => _value;
 }
 
+/// A flag for [OrtProvider.nnapi].
 enum NnapiFlags implements OrtFlags {
   useNone(0x000),
   useFp16(0x001),
@@ -29,6 +31,7 @@ enum NnapiFlags implements OrtFlags {
   int get value => _value;
 }
 
+/// A flag for [OrtProvider.coreml].
 enum CoreMLFlags implements OrtFlags {
   useNone(0x000),
   useCpuOnly(0x001),

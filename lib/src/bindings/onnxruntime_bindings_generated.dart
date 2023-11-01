@@ -444,8 +444,9 @@ class OrtCustomOp extends ffi.Struct {
               ffi.Pointer<OrtKernelContext> context)>> KernelCompute;
 
   external ffi.Pointer<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Pointer<ffi.Void> op_kernel)>> KernelDestroy;
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void> op_kernel)>>
+      KernelDestroy;
 
   /// Returns the characteristics of the input & output tensors
   external ffi.Pointer<
@@ -1099,8 +1100,8 @@ class OrtApi extends ffi.Struct {
               ffi.Size dim_count,
               ffi.Pointer<ffi.Pointer<OrtValue>> out)>> KernelContext_GetOutput;
 
-  external ffi.Pointer<
-          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<OrtEnv> input)>>
+  external ffi
+      .Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<OrtEnv> input)>>
       ReleaseEnv;
 
   external ffi.Pointer<
@@ -1108,8 +1109,8 @@ class OrtApi extends ffi.Struct {
       ReleaseStatus;
 
   external ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Void Function(ffi.Pointer<OrtMemoryInfo> input)>>
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<OrtMemoryInfo> input)>>
       ReleaseMemoryInfo;
 
   external ffi.Pointer<
@@ -1121,8 +1122,8 @@ class OrtApi extends ffi.Struct {
       ReleaseValue;
 
   external ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Void Function(ffi.Pointer<OrtRunOptions> input)>>
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<OrtRunOptions> input)>>
       ReleaseRunOptions;
 
   external ffi.Pointer<
@@ -1182,8 +1183,8 @@ class OrtApi extends ffi.Struct {
       GetSequenceElementType;
 
   external ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Void Function(ffi.Pointer<OrtMapTypeInfo> input)>>
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<OrtMapTypeInfo> input)>>
       ReleaseMapTypeInfo;
 
   external ffi.Pointer<
@@ -1339,8 +1340,9 @@ class OrtApi extends ffi.Struct {
               ffi.Pointer<ffi.Pointer<OrtAllocator>> out)>> CreateAllocator;
 
   external ffi.Pointer<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Pointer<OrtAllocator> input)>> ReleaseAllocator;
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<OrtAllocator> input)>>
+      ReleaseAllocator;
 
   external ffi.Pointer<
       ffi.NativeFunction<
@@ -1355,8 +1357,9 @@ class OrtApi extends ffi.Struct {
               ffi.Pointer<ffi.Pointer<OrtIoBinding>> out)>> CreateIoBinding;
 
   external ffi.Pointer<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Pointer<OrtIoBinding> input)>> ReleaseIoBinding;
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<OrtIoBinding> input)>>
+      ReleaseIoBinding;
 
   external ffi.Pointer<
       ffi.NativeFunction<
@@ -1519,7 +1522,7 @@ class OrtApi extends ffi.Struct {
       SessionOptionsAppendExecutionProvider_TensorRT;
 
   external ffi
-          .Pointer<ffi.NativeFunction<OrtStatusPtr Function(ffi.Int device_id)>>
+      .Pointer<ffi.NativeFunction<OrtStatusPtr Function(ffi.Int device_id)>>
       SetCurrentGpuDeviceId;
 
   external ffi.Pointer<
@@ -1931,8 +1934,8 @@ class OrtApi extends ffi.Struct {
               ffi.Pointer<ffi.Pointer<OrtValue>> output_values,
               ffi.Int output_count)>> InvokeOp;
 
-  external ffi.Pointer<
-          ffi.NativeFunction<ffi.Void Function(ffi.Pointer<OrtOp> input)>>
+  external ffi
+      .Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<OrtOp> input)>>
       ReleaseOp;
 
   external ffi.Pointer<
@@ -1951,8 +1954,8 @@ class OrtApi extends ffi.Struct {
       CopyKernelInfo;
 
   external ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Void Function(ffi.Pointer<OrtKernelInfo> input)>>
+          ffi
+          .NativeFunction<ffi.Void Function(ffi.Pointer<OrtKernelInfo> input)>>
       ReleaseKernelInfo;
 
   /// \name Ort Training
@@ -2524,6 +2527,7 @@ typedef OrtCustomThreadHandle = ffi.Pointer<OrtCustomHandleType>;
 
 class OrtCustomHandleType extends ffi.Struct {
   @ffi.Char()
+  // ignore: unused_field
   external int __place_holder;
 }
 

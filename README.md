@@ -14,7 +14,7 @@ Flutter plugin for OnnxRuntime with `FFI` provides an easy, flexible, and fast D
 * Flexibility to use any Onnx Model.
 * Acceleration using multi-threading.
 * Similar structure as OnnxRuntime Java and C# API.
-* Inference speeds close to native Android/iOS Apps built using the Java/Objective-C API.
+* Inference speed is not slower than native Android/iOS Apps built using the Java/Objective-C API.
 * Run inference in different isolates to prevent jank in UI thread.
 
 ## Getting Started
@@ -24,11 +24,8 @@ In your flutter project add the dependency:
 ```yml
 dependencies:
   ...
-  onnxruntime:
+  onnxruntime: x.y.z
 ```
-
-For help getting started with Flutter, view the online
-[documentation](https://flutter.io/).
 
 ## Usage example
 
@@ -64,6 +61,9 @@ final runOptions = OrtRunOptions();
 final outputs = await _session?.runAsync(runOptions, inputs);
 inputOrt.release();
 runOptions.release();
+outputs?.forEach((element) {
+  element?.release();
+});
 ```
 
 ### Releasing environment

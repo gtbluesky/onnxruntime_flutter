@@ -2,26 +2,27 @@ import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart';
 import 'package:onnxruntime/src/bindings/onnxruntime_bindings_generated.dart'
-    as bindings;
+    as bg;
 import 'package:onnxruntime/src/ort_env.dart';
 
+/// Description of the ort status.
 class OrtStatus {
   OrtStatus._();
 
-  static void checkOrtStatus(bindings.OrtStatusPtr? ptr) {
+  /// Check ort status.
+  static void checkOrtStatus(bg.OrtStatusPtr? ptr) {
     if (ptr == null || ptr == ffi.nullptr) {
       return;
     }
     final errorMessage = OrtEnv.instance.ortApiPtr.ref.GetErrorMessage
-        .asFunction<ffi.Pointer<ffi.Char> Function(bindings.OrtStatusPtr)>()
-        (ptr)
+        .asFunction<ffi.Pointer<ffi.Char> Function(bg.OrtStatusPtr)>()(ptr)
         .cast<Utf8>()
         .toDartString();
     final errorCode = OrtEnv.instance.ortApiPtr.ref.GetErrorCode
-        .asFunction<int Function(bindings.OrtStatusPtr)>()(ptr);
+        .asFunction<int Function(bg.OrtStatusPtr)>()(ptr);
     final ortErrorCode = _OrtErrorCode.valueOf(errorCode);
     OrtEnv.instance.ortApiPtr.ref.ReleaseStatus
-        .asFunction<void Function(bindings.OrtStatusPtr)>()(ptr);
+        .asFunction<void Function(bg.OrtStatusPtr)>()(ptr);
     if (ortErrorCode == _OrtErrorCode.ok) {
       return;
     }
@@ -43,18 +44,18 @@ class _OrtException implements Exception {
 
 enum _OrtErrorCode {
   unknown(-1),
-  ok(bindings.OrtErrorCode.ORT_OK),
-  fail(bindings.OrtErrorCode.ORT_FAIL),
-  invalidArgument(bindings.OrtErrorCode.ORT_INVALID_ARGUMENT),
-  noSuchFile(bindings.OrtErrorCode.ORT_NO_SUCHFILE),
-  noModel(bindings.OrtErrorCode.ORT_NO_MODEL),
-  engineError(bindings.OrtErrorCode.ORT_ENGINE_ERROR),
-  runtimeException(bindings.OrtErrorCode.ORT_RUNTIME_EXCEPTION),
-  invalidProtobuf(bindings.OrtErrorCode.ORT_INVALID_PROTOBUF),
-  modelLoaded(bindings.OrtErrorCode.ORT_MODEL_LOADED),
-  notImplemented(bindings.OrtErrorCode.ORT_NOT_IMPLEMENTED),
-  invalidGraph(bindings.OrtErrorCode.ORT_INVALID_GRAPH),
-  epFail(bindings.OrtErrorCode.ORT_EP_FAIL);
+  ok(bg.OrtErrorCode.ORT_OK),
+  fail(bg.OrtErrorCode.ORT_FAIL),
+  invalidArgument(bg.OrtErrorCode.ORT_INVALID_ARGUMENT),
+  noSuchFile(bg.OrtErrorCode.ORT_NO_SUCHFILE),
+  noModel(bg.OrtErrorCode.ORT_NO_MODEL),
+  engineError(bg.OrtErrorCode.ORT_ENGINE_ERROR),
+  runtimeException(bg.OrtErrorCode.ORT_RUNTIME_EXCEPTION),
+  invalidProtobuf(bg.OrtErrorCode.ORT_INVALID_PROTOBUF),
+  modelLoaded(bg.OrtErrorCode.ORT_MODEL_LOADED),
+  notImplemented(bg.OrtErrorCode.ORT_NOT_IMPLEMENTED),
+  invalidGraph(bg.OrtErrorCode.ORT_INVALID_GRAPH),
+  epFail(bg.OrtErrorCode.ORT_EP_FAIL);
 
   final int value;
 
@@ -62,29 +63,29 @@ enum _OrtErrorCode {
 
   static _OrtErrorCode valueOf(int type) {
     switch (type) {
-      case bindings.OrtErrorCode.ORT_OK:
+      case bg.OrtErrorCode.ORT_OK:
         return ok;
-      case bindings.OrtErrorCode.ORT_FAIL:
+      case bg.OrtErrorCode.ORT_FAIL:
         return fail;
-      case bindings.OrtErrorCode.ORT_INVALID_ARGUMENT:
+      case bg.OrtErrorCode.ORT_INVALID_ARGUMENT:
         return invalidArgument;
-      case bindings.OrtErrorCode.ORT_NO_SUCHFILE:
+      case bg.OrtErrorCode.ORT_NO_SUCHFILE:
         return noSuchFile;
-      case bindings.OrtErrorCode.ORT_NO_MODEL:
+      case bg.OrtErrorCode.ORT_NO_MODEL:
         return noModel;
-      case bindings.OrtErrorCode.ORT_ENGINE_ERROR:
+      case bg.OrtErrorCode.ORT_ENGINE_ERROR:
         return engineError;
-      case bindings.OrtErrorCode.ORT_RUNTIME_EXCEPTION:
+      case bg.OrtErrorCode.ORT_RUNTIME_EXCEPTION:
         return runtimeException;
-      case bindings.OrtErrorCode.ORT_INVALID_PROTOBUF:
+      case bg.OrtErrorCode.ORT_INVALID_PROTOBUF:
         return invalidProtobuf;
-      case bindings.OrtErrorCode.ORT_MODEL_LOADED:
+      case bg.OrtErrorCode.ORT_MODEL_LOADED:
         return modelLoaded;
-      case bindings.OrtErrorCode.ORT_NOT_IMPLEMENTED:
+      case bg.OrtErrorCode.ORT_NOT_IMPLEMENTED:
         return notImplemented;
-      case bindings.OrtErrorCode.ORT_INVALID_GRAPH:
+      case bg.OrtErrorCode.ORT_INVALID_GRAPH:
         return invalidGraph;
-      case bindings.OrtErrorCode.ORT_EP_FAIL:
+      case bg.OrtErrorCode.ORT_EP_FAIL:
         return epFail;
       default:
         return unknown;
