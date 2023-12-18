@@ -72,6 +72,7 @@ class OrtSession {
   OrtSession.fromAddress(int address) {
     _ptr = ffi.Pointer.fromAddress(address);
     _init();
+    _isolateSession = OrtIsolateSession(this);
   }
 
   _init() {
