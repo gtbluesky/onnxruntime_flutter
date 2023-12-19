@@ -20,7 +20,7 @@ class OrtSession {
   late List<String> _inputNames;
   late int _outputCount;
   late List<String> _outputNames;
-  late OrtIsolateSession _isolateSession;
+  OrtIsolateSession? _isolateSession;
 
   int get address => _ptr.address;
   int get inputCount => _inputCount;
@@ -229,11 +229,12 @@ class OrtSession {
   Future<List<OrtValue?>>? runAsync(
       OrtRunOptions runOptions, Map<String, OrtValue> inputs,
       [List<String>? outputNames]) {
-    return _isolateSession.run(runOptions, inputs, outputNames);
+    return _isolateSession?.run(runOptions, inputs, outputNames);
   }
 
   release() {
-    _isolateSession.release();
+    _isolateSession?.release();
+    _isolateSession = null;
     OrtEnv.instance.ortApiPtr.ref.ReleaseSession
         .asFunction<void Function(ffi.Pointer<bg.OrtSession>)>()(_ptr);
   }

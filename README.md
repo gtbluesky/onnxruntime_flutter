@@ -10,7 +10,7 @@ Flutter plugin for OnnxRuntime with `FFI` provides an easy, flexible, and fast D
 
 ## Key Features
 
-* Multi-platform Support for Android and iOS
+* Multi-platform Support for Android and iOS.
 * Flexibility to use any Onnx Model.
 * Acceleration using multi-threading.
 * Similar structure as OnnxRuntime Java and C# API.
