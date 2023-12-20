@@ -14,13 +14,13 @@ class OrtIsolateSession {
 
   IsolateSessionState get state => _state;
   var _state = IsolateSessionState.idle;
+  var _initialized = false;
+  final _completer = Completer();
 
   OrtIsolateSession(
     OrtSession session, {
     this.debugName = 'OnnxRuntimeSessionIsolate',
-  }) : address = session.address {
-    _init();
-  }
+  }) : address = session.address;
 
   Future<void> _init() async {
     final rootIsolateReceivePort = ReceivePort();
@@ -31,6 +31,7 @@ class OrtIsolateSession {
     _streamSubscription = rootIsolateReceivePort.listen((message) {
       if (message is SendPort) {
         _newIsolateSendPort = message;
+        _completer.complete();
       }
       if (message is List<MapEntry>) {
         _outputController.add(message);
@@ -71,6 +72,11 @@ class OrtIsolateSession {
   Future<List<OrtValue?>> run(
       OrtRunOptions runOptions, Map<String, OrtValue> inputs,
       [List<String>? outputNames]) async {
+    if (!_initialized) {
+      await _init();
+      await _completer.future;
+      _initialized = true;
+    }
     final transformedInputs =
         inputs.map((key, value) => MapEntry(key, value.address));
     _state = IsolateSessionState.loading;

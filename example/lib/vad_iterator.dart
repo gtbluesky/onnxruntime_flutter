@@ -66,7 +66,7 @@ class VadIterator {
     _session = OrtSession.fromBuffer(bytes, _sessionOptions!);
   }
 
-  Future<bool> predict(Float32List data) async {
+  Future<bool> predict(Float32List data, bool concurrent) async {
     final inputOrt =
         OrtValueTensor.createTensorWithDataList(data, [_batch, _windowSizeSamples]);
     final srOrt = OrtValueTensor.createTensorWithData(_sampleRate);
@@ -74,8 +74,12 @@ class VadIterator {
     final cOrt = OrtValueTensor.createTensorWithDataList(_cell);
     final runOptions = OrtRunOptions();
     final inputs = {'input': inputOrt, 'sr': srOrt, 'h': hOrt, 'c': cOrt};
-    // final outputs = _session?.run(runOptions, inputs);
-    final outputs = await _session?.runAsync(runOptions, inputs);
+    final List<OrtValue?>? outputs;
+    if (concurrent) {
+      outputs = await _session?.runAsync(runOptions, inputs);
+    } else {
+      outputs = _session?.run(runOptions, inputs);
+    }
     inputOrt.release();
     srOrt.release();
     hOrt.release();

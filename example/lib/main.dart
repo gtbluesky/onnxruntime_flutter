@@ -1,12 +1,10 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:onnxruntime/onnxruntime.dart';
-import 'package:onnxruntime_example/record_manager.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:onnxruntime_example/model_type_test.dart';
-import 'package:onnxruntime_example/vad_iterator.dart';
+import 'model_type_test.dart';
+import 'vad_iterator.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,18 +19,15 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late String _version;
-  String? _pcmPath;
-  String? _wavPath;
-  AudioPlayer? _audioPlayer;
   VadIterator? _vadIterator;
   static const frameSize = 64;
+  static const sampleRate = 16000;
 
   @override
   void initState() {
     super.initState();
     _version = OrtEnv.version;
-
-    _vadIterator = VadIterator(frameSize, RecordManager.sampleRate);
+    _vadIterator = VadIterator(frameSize, sampleRate);
     _vadIterator?.initModel();
   }
 
@@ -61,45 +56,26 @@ class _MyAppState extends State<MyApp> {
                   height: 50,
                 ),
                 TextButton(
-                    onPressed: () async {
-                      final audioSource = await RecordManager.instance.start();
-                      _pcmPath = audioSource?[0];
-                      _wavPath = audioSource?[1];
+                    onPressed: () {
+                      _typeTest();
                     },
-                    child: const Text('Start Recording')),
+                    child: const Text('Mode Type Test')),
                 const SizedBox(
                   height: 50,
                 ),
                 TextButton(
                     onPressed: () {
-                      RecordManager.instance.stop();
+                      _vad(false);
                     },
-                    child: const Text('Stop Recording')),
-                const SizedBox(
-                  height: 50,
-                ),
-                TextButton(
-                    onPressed: () async {
-                      _audioPlayer = AudioPlayer();
-                      await _audioPlayer?.play(DeviceFileSource(_wavPath!));
-                    },
-                    child: const Text('Start Playing')),
+                    child: const Text('VAD')),
                 const SizedBox(
                   height: 50,
                 ),
                 TextButton(
                     onPressed: () {
-                      _audioPlayer?.stop();
+                      _vad(true);
                     },
-                    child: const Text('Stop Playing')),
-                const SizedBox(
-                  height: 50,
-                ),
-                TextButton(
-                    onPressed: () {
-                      infer();
-                    },
-                    child: const Text('Start Inferring')),
+                    child: const Text('VAD Concurrency')),
               ],
             ),
           ),
@@ -108,16 +84,20 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  infer() async {
-    // final startTime = DateTime.now().millisecondsSinceEpoch;
-    // print('out=${(await ModelTypeTest.testBool())[0].value}');
-    // print('out=${(await ModelTypeTest.testFloat())[0].value}');
-    // print('out=${(await ModelTypeTest.testInt64())[0].value}');
-    // print('out=${(await ModelTypeTest.testString())[0].value}');
-    // final endTime = DateTime.now().millisecondsSinceEpoch;
-    // print('infer cost time=${endTime - startTime}ms');
-    const windowByteCount = frameSize * 2 * RecordManager.sampleRate ~/ 1000;
-    final bytes = await File(_pcmPath!).readAsBytes();
+  _typeTest() async {
+    final startTime = DateTime.now().millisecondsSinceEpoch;
+    print('out=${(await ModelTypeTest.testBool())[0].value}');
+    print('out=${(await ModelTypeTest.testFloat())[0].value}');
+    print('out=${(await ModelTypeTest.testInt64())[0].value}');
+    print('out=${(await ModelTypeTest.testString())[0].value}');
+    final endTime = DateTime.now().millisecondsSinceEpoch;
+    print('infer cost time=${endTime - startTime}ms');
+  }
+
+  _vad(bool concurrent) async {
+    const windowByteCount = frameSize * 2 * sampleRate ~/ 1000;
+    final rawAssetFile = await rootBundle.load('assets/audio/vad_example.pcm');
+    final bytes = rawAssetFile.buffer.asUint8List();
     var start = 0;
     var end = start + windowByteCount;
     List<int> frameBuffer;
@@ -126,7 +106,7 @@ class _MyAppState extends State<MyApp> {
       frameBuffer = bytes.sublist(start, end).toList();
       final floatBuffer =
       _transformBuffer(frameBuffer).map((e) => e / 32768).toList();
-      await _vadIterator?.predict(Float32List.fromList(floatBuffer));
+      await _vadIterator?.predict(Float32List.fromList(floatBuffer), concurrent);
       start += windowByteCount;
       end = start + windowByteCount;
     }

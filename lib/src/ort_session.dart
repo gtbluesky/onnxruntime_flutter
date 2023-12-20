@@ -42,7 +42,6 @@ class OrtSession {
     _ptr = pp.value;
     calloc.free(pp);
     _init();
-    _isolateSession = OrtIsolateSession(this);
   }
 
   /// Creates a session from buffer.
@@ -65,7 +64,6 @@ class OrtSession {
     calloc.free(pp);
     calloc.free(bufferPtr);
     _init();
-    _isolateSession = OrtIsolateSession(this);
   }
 
   /// Creates a session from a pointer's address.
@@ -229,6 +227,7 @@ class OrtSession {
   Future<List<OrtValue?>>? runAsync(
       OrtRunOptions runOptions, Map<String, OrtValue> inputs,
       [List<String>? outputNames]) {
+    _isolateSession ??= OrtIsolateSession(this);
     return _isolateSession?.run(runOptions, inputs, outputNames);
   }
 

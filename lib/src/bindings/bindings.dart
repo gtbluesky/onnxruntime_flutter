@@ -11,6 +11,10 @@ final DynamicLibrary _dylib = () {
     return DynamicLibrary.process();
   }
 
+  if (Platform.isMacOS) {
+    return DynamicLibrary.open('libonnxruntime.1.15.1.dylib');
+  }
+
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
 }();
 
