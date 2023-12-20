@@ -3,14 +3,20 @@
 # OnnxRuntime Plugin
 [![pub package](https://img.shields.io/pub/v/onnxruntime.svg)](https://pub.dev/packages/onnxruntime)
 
-
 ## Overview
 
-Flutter plugin for OnnxRuntime with `FFI` provides an easy, flexible, and fast Dart API to integrate Onnx models in flutter apps across mobile and desktop platforms.
+Flutter plugin for OnnxRuntime via `dart:ffi` provides an easy, flexible, and fast Dart API to integrate Onnx models in flutter apps across mobile and desktop platforms.
+
+| **Platform**      | Android       | iOS | Linux | macOS | Windows |
+|-------------------|---------------|-----|-------|-------|---------|
+| **Compatibility** | API level 21+ | *   | *     | *     | *       |
+| **Architecture**  | *             | *   | *     | *     | *       |
+
+*: [Consistent with Flutter](https://docs.flutter.dev/reference/supported-platforms)
 
 ## Key Features
 
-* Multi-platform Support for Android and iOS.
+* Multi-platform Support for Android, iOS, Linux, macOS, Windows, and Web(Coming soon).
 * Flexibility to use any Onnx Model.
 * Acceleration using multi-threading.
 * Similar structure as OnnxRuntime Java and C# API.

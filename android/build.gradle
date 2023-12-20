@@ -25,32 +25,19 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    // Conditional for compatibility with AGP <4.2.
     if (project.android.hasProperty("namespace")) {
         namespace 'com.gtbluesky.onnxruntime'
     }
+
     // Bumping the plugin compileSdkVersion requires all clients of this plugin
     // to bump the version in their app.
-    compileSdkVersion 31
+    compileSdkVersion 33
 
-    // Bumping the plugin ndkVersion requires all clients of this plugin to bump
-    // the version in their app and to download a newer version of the NDK.
-    ndkVersion "23.1.7779620"
-
-    // Invoke the shared CMake build with the Android Gradle Plugin.
-    externalNativeBuild {
-//        cmake {
-//            path "../src/CMakeLists.txt"
-//
-//            // The default CMake version for the Android Gradle Plugin is 3.10.2.
-//            // https://developer.android.com/studio/projects/install-ndk#vanilla_cmake
-//            //
-//            // The Flutter tooling requires that developers have CMake 3.10 or later
-//            // installed. You should not increase this version, as doing so will cause
-//            // the plugin to fail to compile for some customers of the plugin.
-//            // version "3.10.2"
-//        }
-    }
+    // Use the NDK version
+    // declared in /android/app/build.gradle file of the Flutter project.
+    // Replace it with a version number if this plugin requires a specfic NDK version.
+    // (e.g. ndkVersion "23.1.7779620")
+    ndkVersion android.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -60,8 +47,4 @@ android {
     defaultConfig {
         minSdkVersion 21
     }
-}
-
-dependencies {
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.15.1")
 }

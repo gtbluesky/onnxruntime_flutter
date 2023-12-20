@@ -15,6 +15,14 @@ final DynamicLibrary _dylib = () {
     return DynamicLibrary.open('libonnxruntime.1.15.1.dylib');
   }
 
+  if (Platform.isWindows) {
+    return DynamicLibrary.open('onnxruntime.dll');
+  }
+
+  if (Platform.isLinux) {
+    return DynamicLibrary.open('libonnxruntime.so.1.15.1');
+  }
+
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
 }();
 

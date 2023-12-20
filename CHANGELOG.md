@@ -1,3 +1,7 @@
+## 1.3.0
+
+* Attempts to support macOS, Windows and Linux.
+
 ## 1.2.0
 
 * Compatible with Gradle8.
