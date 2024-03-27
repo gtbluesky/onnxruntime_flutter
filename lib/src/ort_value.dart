@@ -422,7 +422,7 @@ class OrtValueTensor extends OrtValue {
     OrtStatus.checkOrtStatus(statusPtr);
     final ortValuePtr = ortValuePtrPtr.value;
     calloc.free(shapePtr);
-    // calloc.free(dataPtr);
+    calloc.free(dataPtr);
     calloc.free(ortValuePtrPtr);
     calloc.free(ortMemoryInfoPtrPtr);
     return OrtValueTensor(ortValuePtr);
