@@ -1,3 +1,7 @@
+## 1.4.1
+
+* Fixes a memory leak when creating tensor.
+
 ## 1.4.0
 
 * Fixes a memory leak when creating tensor.

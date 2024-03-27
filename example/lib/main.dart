@@ -86,10 +86,27 @@ class _MyAppState extends State<MyApp> {
 
   _typeTest() async {
     final startTime = DateTime.now().millisecondsSinceEpoch;
-    print('out=${(await ModelTypeTest.testBool())[0].value}');
-    print('out=${(await ModelTypeTest.testFloat())[0].value}');
-    print('out=${(await ModelTypeTest.testInt64())[0].value}');
-    print('out=${(await ModelTypeTest.testString())[0].value}');
+    List<OrtValue?>? outputs;
+    outputs = await ModelTypeTest.testBool();
+    print('out=${outputs[0]?.value}');
+    outputs.forEach((element) {
+      element?.release();
+    });
+    outputs = await ModelTypeTest.testFloat();
+    print('out=${outputs[0]?.value}');
+    outputs.forEach((element) {
+      element?.release();
+    });
+    outputs = await ModelTypeTest.testInt64();
+    print('out=${outputs[0]?.value}');
+    outputs.forEach((element) {
+      element?.release();
+    });
+    outputs = await ModelTypeTest.testString();
+    print('out=${outputs[0]?.value}');
+    outputs.forEach((element) {
+      element?.release();
+    });
     final endTime = DateTime.now().millisecondsSinceEpoch;
     print('infer cost time=${endTime - startTime}ms');
   }
@@ -102,11 +119,12 @@ class _MyAppState extends State<MyApp> {
     var end = start + windowByteCount;
     List<int> frameBuffer;
     final startTime = DateTime.now().millisecondsSinceEpoch;
-    while(end <= bytes.length) {
+    while (end <= bytes.length) {
       frameBuffer = bytes.sublist(start, end).toList();
       final floatBuffer =
-      _transformBuffer(frameBuffer).map((e) => e / 32768).toList();
-      await _vadIterator?.predict(Float32List.fromList(floatBuffer), concurrent);
+          _transformBuffer(frameBuffer).map((e) => e / 32768).toList();
+      await _vadIterator?.predict(
+          Float32List.fromList(floatBuffer), concurrent);
       start += windowByteCount;
       end = start + windowByteCount;
     }

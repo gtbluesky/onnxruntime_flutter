@@ -72,7 +72,7 @@ class OrtSession {
     _init();
   }
 
-  _init() {
+  void _init() {
     _inputCount = _getInputCount();
     _inputNames = _getInputNames();
     _outputCount = _getOutputCount();
@@ -231,7 +231,7 @@ class OrtSession {
     return _isolateSession?.run(runOptions, inputs, outputNames);
   }
 
-  release() {
+  void release() {
     _isolateSession?.release();
     _isolateSession = null;
     OrtEnv.instance.ortApiPtr.ref.ReleaseSession
@@ -247,7 +247,7 @@ class OrtSessionOptions {
     _create();
   }
 
-  _create() {
+  void _create() {
     final pp = calloc<ffi.Pointer<bg.OrtSessionOptions>>();
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateSessionOptions
         .asFunction<
@@ -258,13 +258,13 @@ class OrtSessionOptions {
     calloc.free(pp);
   }
 
-  release() {
+  void release() {
     OrtEnv.instance.ortApiPtr.ref.ReleaseSessionOptions
         .asFunction<void Function(ffi.Pointer<bg.OrtSessionOptions>)>()(_ptr);
   }
 
   /// Sets the number of intra op threads.
-  setIntraOpNumThreads(int numThreads) {
+  void setIntraOpNumThreads(int numThreads) {
     _intraOpNumThreads = numThreads;
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetIntraOpNumThreads
         .asFunction<
@@ -274,7 +274,7 @@ class OrtSessionOptions {
   }
 
   /// Sets the number of inter op threads.
-  setInterOpNumThreads(int numThreads) {
+  void setInterOpNumThreads(int numThreads) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetInterOpNumThreads
         .asFunction<
             bg.OrtStatusPtr Function(
@@ -283,7 +283,7 @@ class OrtSessionOptions {
   }
 
   /// Sets the level of session graph optimization.
-  setSessionGraphOptimizationLevel(GraphOptimizationLevel level) {
+  void setSessionGraphOptimizationLevel(GraphOptimizationLevel level) {
     final statusPtr = OrtEnv
         .instance.ortApiPtr.ref.SetSessionGraphOptimizationLevel
         .asFunction<
@@ -392,7 +392,7 @@ class OrtRunOptions {
     _ptr = ffi.Pointer.fromAddress(address);
   }
 
-  _create() {
+  void _create() {
     final pp = calloc<ffi.Pointer<bg.OrtRunOptions>>();
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateRunOptions.asFunction<
         bg.OrtStatusPtr Function(
@@ -402,12 +402,12 @@ class OrtRunOptions {
     calloc.free(pp);
   }
 
-  release() {
+  void release() {
     OrtEnv.instance.ortApiPtr.ref.ReleaseRunOptions
         .asFunction<void Function(ffi.Pointer<bg.OrtRunOptions> input)>()(_ptr);
   }
 
-  setRunLogVerbosityLevel(int level) {
+  void setRunLogVerbosityLevel(int level) {
     final statusPtr = OrtEnv
         .instance.ortApiPtr.ref.RunOptionsSetRunLogVerbosityLevel
         .asFunction<
@@ -429,7 +429,7 @@ class OrtRunOptions {
     return level;
   }
 
-  setRunLogSeverityLevel(int level) {
+  void setRunLogSeverityLevel(int level) {
     final statusPtr = OrtEnv
         .instance.ortApiPtr.ref.RunOptionsSetRunLogSeverityLevel
         .asFunction<
@@ -451,7 +451,7 @@ class OrtRunOptions {
     return level;
   }
 
-  setRunTag(String tag) {
+  void setRunTag(String tag) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.RunOptionsSetRunTag
             .asFunction<
                 bg.OrtStatusPtr Function(
@@ -472,14 +472,14 @@ class OrtRunOptions {
     return tag;
   }
 
-  setTerminate() {
+  void setTerminate() {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.RunOptionsSetTerminate
         .asFunction<
             bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtRunOptions>)>()(_ptr);
     OrtStatus.checkOrtStatus(statusPtr);
   }
 
-  unsetTerminate() {
+  void unsetTerminate() {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.RunOptionsUnsetTerminate
         .asFunction<
             bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtRunOptions>)>()(_ptr);

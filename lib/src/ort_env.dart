@@ -26,12 +26,12 @@ class OrtEnv {
   }
 
   /// Set ort's api version.
-  static setApiVersion(OrtApiVersion apiVersion) {
+  static void setApiVersion(OrtApiVersion apiVersion) {
     _apiVersion = apiVersion;
   }
 
   /// Initialize the onnx runtime environment.
-  init(
+  void init(
       {OrtLoggingLevel level = OrtLoggingLevel.warning,
       String logId = 'DartOnnxRuntime',
       OrtThreadingOptions? options}) {
@@ -58,7 +58,7 @@ class OrtEnv {
   }
 
   /// Release the onnx runtime environment.
-  release() {
+  void release() {
     if (_ptr == null) {
       return;
     }
@@ -107,7 +107,7 @@ class OrtEnv {
     return list;
   }
 
-  _setLanguageProjection() {
+  void _setLanguageProjection() {
     if (_ptr == null) {
       init();
     }
@@ -173,7 +173,7 @@ class OrtThreadingOptions {
     _create();
   }
 
-  _create() {
+  void _create() {
     final pp = calloc<ffi.Pointer<bg.OrtThreadingOptions>>();
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.CreateThreadingOptions
         .asFunction<
@@ -184,13 +184,13 @@ class OrtThreadingOptions {
     calloc.free(pp);
   }
 
-  release() {
+  void release() {
     OrtEnv.instance.ortApiPtr.ref.ReleaseThreadingOptions
         .asFunction<void Function(ffi.Pointer<bg.OrtThreadingOptions>)>()(_ptr);
   }
 
   /// Sets the number of global intra op threads.
-  setGlobalIntraOpNumThreads(int numThreads) {
+  void setGlobalIntraOpNumThreads(int numThreads) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalIntraOpNumThreads
         .asFunction<
             bg.OrtStatusPtr Function(
@@ -199,7 +199,7 @@ class OrtThreadingOptions {
   }
 
   /// Sets the number of global inter op threads.
-  setGlobalInterOpNumThreads(int numThreads) {
+  void setGlobalInterOpNumThreads(int numThreads) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalInterOpNumThreads
         .asFunction<
             bg.OrtStatusPtr Function(
@@ -208,7 +208,7 @@ class OrtThreadingOptions {
   }
 
   /// Sets the global spin control.
-  setGlobalSpinControl(bool allowSpinning) {
+  void setGlobalSpinControl(bool allowSpinning) {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalSpinControl
         .asFunction<
             bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtThreadingOptions>,
@@ -216,7 +216,7 @@ class OrtThreadingOptions {
     OrtStatus.checkOrtStatus(statusPtr);
   }
 
-  setGlobalDenormalAsZero() {
+  void setGlobalDenormalAsZero() {
     final statusPtr = OrtEnv.instance.ortApiPtr.ref.SetGlobalDenormalAsZero
         .asFunction<
             bg.OrtStatusPtr Function(
@@ -225,7 +225,7 @@ class OrtThreadingOptions {
   }
 
   /// Sets the global intra op thread affinity.
-  setGlobalIntraOpThreadAffinity(String affinity) {
+  void setGlobalIntraOpThreadAffinity(String affinity) {
     final statusPtr =
         OrtEnv.instance.ortApiPtr.ref.SetGlobalIntraOpThreadAffinity.asFunction<
                 bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtThreadingOptions>,

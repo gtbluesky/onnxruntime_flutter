@@ -201,22 +201,27 @@ abstract class OrtValue {
     return data;
   }
 
-  _releaseOrtValue(ffi.Pointer<bg.OrtValue> ortValuePtr) {
+  void _releaseOrtValue(ffi.Pointer<bg.OrtValue> ortValuePtr) {
     OrtEnv.instance.ortApiPtr.ref.ReleaseValue
         .asFunction<void Function(ffi.Pointer<bg.OrtValue>)>()(ortValuePtr);
   }
 
-  release() {
+  void release() {
     _releaseOrtValue(_ptr);
   }
 }
 
 class OrtValueTensor extends OrtValue {
   late OrtTensorTypeAndShapeInfo _info;
+  ffi.Pointer<ffi.Void> _dataPtr = ffi.nullptr;
 
-  OrtValueTensor(ffi.Pointer<bg.OrtValue> ptr) {
+  OrtValueTensor(ffi.Pointer<bg.OrtValue> ptr,
+      [ffi.Pointer<ffi.Void>? dataPtr]) {
     _ptr = ptr;
     _info = OrtTensorTypeAndShapeInfo(ptr);
+    if (dataPtr != null) {
+      _dataPtr = dataPtr;
+    }
   }
 
   factory OrtValueTensor.fromAddress(int address) {
@@ -422,10 +427,9 @@ class OrtValueTensor extends OrtValue {
     OrtStatus.checkOrtStatus(statusPtr);
     final ortValuePtr = ortValuePtrPtr.value;
     calloc.free(shapePtr);
-    calloc.free(dataPtr);
     calloc.free(ortValuePtrPtr);
     calloc.free(ortMemoryInfoPtrPtr);
-    return OrtValueTensor(ortValuePtr);
+    return OrtValueTensor(ortValuePtr, dataPtr);
   }
 
   @override
@@ -474,6 +478,16 @@ class OrtValueTensor extends OrtValue {
           throw Exception('Extracting the value of an invalid Tensor.');
       }
     }
+  }
+
+  @override
+  void release() {
+    super.release();
+    if (_dataPtr == ffi.nullptr) {
+      return;
+    }
+    calloc.free(_dataPtr);
+    _dataPtr = ffi.nullptr;
   }
 }
 
@@ -710,7 +724,7 @@ class OrtTensorTypeAndShapeInfo {
     return ONNXTensorElementDataType.valueOf(onnxTensorElementDataType);
   }
 
-  static _releaseTensorTypeAndShapeInfo(
+  static void _releaseTensorTypeAndShapeInfo(
       ffi.Pointer<bg.OrtTensorTypeAndShapeInfo> infoPtr) {
     OrtEnv.instance.ortApiPtr.ref.ReleaseTensorTypeAndShapeInfo.asFunction<
         void Function(ffi.Pointer<bg.OrtTensorTypeAndShapeInfo>)>()(infoPtr);
