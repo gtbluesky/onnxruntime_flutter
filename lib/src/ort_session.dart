@@ -231,6 +231,32 @@ class OrtSession {
     return _isolateSession?.run(runOptions, inputs, outputNames);
   }
 
+  String getMetadatas(String key) {
+    final metaPtr = calloc<ffi.Pointer<bg.OrtModelMetadata>>();
+    var statusPtr = OrtEnv.instance.ortApiPtr.ref.SessionGetModelMetadata
+            .asFunction<
+                bg.OrtStatusPtr Function(ffi.Pointer<bg.OrtSession>,
+                    ffi.Pointer<ffi.Pointer<bg.OrtModelMetadata>>)>()(
+        _ptr, metaPtr);
+    OrtStatus.checkOrtStatus(statusPtr);
+    final meta = metaPtr.value;
+    final namePtrPtr = calloc<ffi.Pointer<ffi.Char>>();
+    statusPtr = OrtEnv
+            .instance.ortApiPtr.ref.ModelMetadataLookupCustomMetadataMap
+            .asFunction<
+                bg.OrtStatusPtr Function(
+                    ffi.Pointer<bg.OrtModelMetadata> model_metadata,
+                    ffi.Pointer<bg.OrtAllocator> allocator,
+                    ffi.Pointer<ffi.Char> key,
+                    ffi.Pointer<ffi.Pointer<ffi.Char>> value)>()(
+        meta,
+        OrtAllocator.instance.ptr,
+        key.toNativeUtf8().cast<ffi.Char>(),
+        namePtrPtr);
+    final name = namePtrPtr.value.cast<Utf8>().toDartString();
+    return name;
+  }
+
   void release() {
     _isolateSession?.release();
     _isolateSession = null;
