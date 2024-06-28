@@ -254,6 +254,8 @@ class OrtSession {
         key.toNativeUtf8().cast<ffi.Char>(),
         namePtrPtr);
     final name = namePtrPtr.value.cast<Utf8>().toDartString();
+    calloc.free(metaPtr);
+    calloc.free(namePtrPtr);
     return name;
   }
 
