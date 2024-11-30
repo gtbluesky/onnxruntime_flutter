@@ -27,6 +27,7 @@ class OrtSession {
   List<String> get inputNames => _inputNames;
   int get outputCount => _outputCount;
   List<String> get outputNames => _outputNames;
+  OrtIsolateSession? get isolateSession => _isolateSession;
 
   /// Creates a session from a file.
   OrtSession.fromFile(File modelFile, OrtSessionOptions options) {

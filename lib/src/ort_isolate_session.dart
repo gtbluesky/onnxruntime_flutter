@@ -72,6 +72,8 @@ class OrtIsolateSession {
   Future<List<OrtValue?>> run(
       OrtRunOptions runOptions, Map<String, OrtValue> inputs,
       [List<String>? outputNames]) async {
+    try {
+      
     if (!_initialized) {
       await _init();
       await _completer.future;
@@ -108,6 +110,10 @@ class OrtIsolateSession {
     }
     _state = IsolateSessionState.idle;
     return outputs;
+    } catch (e) {
+      _state = IsolateSessionState.idle;
+      return [];
+    }
   }
 
   Future<void> release() async {
