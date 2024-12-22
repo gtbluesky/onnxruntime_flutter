@@ -3,6 +3,7 @@ enum OrtProvider {
   cpu('CPUExecutionProvider'),
   coreml('CoreMLExecutionProvider'),
   nnapi('NnapiExecutionProvider'),
+  qnn('QNNExecutionProvider'),
   xnnpack('XnnpackExecutionProvider');
 
   final String value;
@@ -21,6 +22,9 @@ enum OrtProvider {
     }
     if (value == xnnpack.value) {
       return xnnpack;
+    }
+    if (value == qnn.value) {
+      return qnn;
     }
     return OrtProvider.cpu;
   }
