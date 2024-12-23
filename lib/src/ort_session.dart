@@ -400,6 +400,11 @@ class OrtSessionOptions {
     return _appendExecutionProvider(OrtProvider.nnapi, flags);
   }
 
+  /// Appends QNN provider.
+  bool appendQnnProvider() {
+    return _appendExecutionProvider2(OrtProvider.qnn, {});
+  }
+
   /// Appends Xnnpack provider.
   bool appendXnnpackProvider() {
     return _appendExecutionProvider2(OrtProvider.xnnpack,
