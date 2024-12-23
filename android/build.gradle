@@ -1,5 +1,3 @@
-// The Android Gradle Plugin builds the native code with the Android NDK.
-
 group 'com.gtbluesky.onnxruntime'
 version '1.0'
 
@@ -15,13 +13,6 @@ buildscript {
     }
 }
 
-rootProject.allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
 apply plugin: 'com.android.library'
 
 android {
@@ -29,14 +20,8 @@ android {
         namespace 'com.gtbluesky.onnxruntime'
     }
 
-    // Bumping the plugin compileSdkVersion requires all clients of this plugin
-    // to bump the version in their app.
     compileSdkVersion 33
 
-    // Use the NDK version
-    // declared in /android/app/build.gradle file of the Flutter project.
-    // Replace it with a version number if this plugin requires a specfic NDK version.
-    // (e.g. ndkVersion "23.1.7779620")
     ndkVersion android.ndkVersion
 
     compileOptions {
@@ -48,3 +33,8 @@ android {
         minSdkVersion 21
     }
 }
+
+dependencies {
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.20.0'
+}
+
