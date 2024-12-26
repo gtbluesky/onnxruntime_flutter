@@ -7,10 +7,10 @@
 
 Flutter plugin for OnnxRuntime via `dart:ffi` provides an easy, flexible, and fast Dart API to integrate Onnx models in flutter apps across mobile and desktop platforms.
 
-| **Platform**      | Android       | iOS | Linux | macOS | Windows |
-|-------------------|---------------|-----|-------|-------|---------|
-| **Compatibility** | API level 21+ | *   | *     | *     | *       |
-| **Architecture**  | arm32/arm64   | *   | *     | *     | *       |
+| **Platform**      | Android | iOS | Linux | macOS | Windows |
+|-------------------|---------|-----|-------|-------|---------|
+| **Compatibility** | *       | *   | *     | *     | *       |
+| **Architecture**  | *       | *   | *     | *     | *       |
 
 *: [Consistent with Flutter](https://docs.flutter.dev/reference/supported-platforms)
 
