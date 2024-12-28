@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:onnxruntime/onnxruntime.dart';
+
 import 'model_type_test.dart';
 import 'vad_iterator.dart';
 
@@ -22,6 +23,7 @@ class _MyAppState extends State<MyApp> {
   VadIterator? _vadIterator;
   static const frameSize = 64;
   static const sampleRate = 16000;
+  String? costTime;
 
   @override
   void initState() {
@@ -34,6 +36,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     const textStyle = TextStyle(fontSize: 16);
+
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
@@ -56,26 +59,31 @@ class _MyAppState extends State<MyApp> {
                   height: 50,
                 ),
                 TextButton(
-                    onPressed: () {
-                      _typeTest();
-                    },
-                    child: const Text('Mode Type Test')),
+                  onPressed: _typeTest,
+                  child: const Text('Mode Type Test'),
+                ),
                 const SizedBox(
                   height: 50,
                 ),
                 TextButton(
-                    onPressed: () {
-                      _vad(false);
-                    },
-                    child: const Text('VAD')),
+                  onPressed: () => _vad(false),
+                  child: const Text('VAD'),
+                ),
                 const SizedBox(
                   height: 50,
                 ),
                 TextButton(
-                    onPressed: () {
-                      _vad(true);
-                    },
-                    child: const Text('VAD Concurrency')),
+                  onPressed: () => _vad(true),
+                  child: const Text('VAD Concurrency'),
+                ),
+                const SizedBox(
+                  height: 50,
+                ),
+                Text(
+                  costTime ?? '',
+                  style: textStyle,
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
@@ -85,33 +93,43 @@ class _MyAppState extends State<MyApp> {
   }
 
   _typeTest() async {
+    setState(() => costTime = null);
     final startTime = DateTime.now().millisecondsSinceEpoch;
     List<OrtValue?>? outputs;
     outputs = await ModelTypeTest.testBool();
+
     print('out=${outputs[0]?.value}');
     outputs.forEach((element) {
       element?.release();
     });
+
     outputs = await ModelTypeTest.testFloat();
     print('out=${outputs[0]?.value}');
     outputs.forEach((element) {
       element?.release();
     });
+
     outputs = await ModelTypeTest.testInt64();
     print('out=${outputs[0]?.value}');
     outputs.forEach((element) {
       element?.release();
     });
+
     outputs = await ModelTypeTest.testString();
     print('out=${outputs[0]?.value}');
     outputs.forEach((element) {
       element?.release();
     });
+
     final endTime = DateTime.now().millisecondsSinceEpoch;
-    print('infer cost time=${endTime - startTime}ms');
+    String inferCost = 'Infer cost time=${endTime - startTime}ms';
+    print(inferCost);
+    setState(() => costTime = inferCost);
   }
 
   _vad(bool concurrent) async {
+    setState(() => costTime = null);
+
     const windowByteCount = frameSize * 2 * sampleRate ~/ 1000;
     final rawAssetFile = await rootBundle.load('assets/audio/vad_example.pcm');
     final bytes = rawAssetFile.buffer.asUint8List();
@@ -130,7 +148,10 @@ class _MyAppState extends State<MyApp> {
     }
     _vadIterator?.reset();
     final endTime = DateTime.now().millisecondsSinceEpoch;
-    print('vad cost time=${endTime - startTime}ms');
+
+    String costTimeTemp = 'Vad cost time=${endTime - startTime}ms';
+    print(costTimeTemp);
+    setState(() => costTime = costTimeTemp);
   }
 
   Int16List _transformBuffer(List<int> buffer) {
