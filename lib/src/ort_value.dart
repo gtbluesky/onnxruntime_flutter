@@ -168,12 +168,18 @@ abstract class OrtValue {
       }
       calloc.free(dataPtrPtr);
     } else if (tensorElementType == ONNXTensorElementDataType.float) {
+      // Allocate memory for the data pointer
       final dataPtrPtr = calloc<ffi.Pointer<ffi.Float>>();
       final dataPtr = _getTensorMutableData(ortValuePtr, dataPtrPtr);
-      for (int i = 0; i < tensorShapeElementCount; ++i) {
-        data.add(dataPtr[i]);
-      }
+
+      // Copy the entire block of memory into a Dart Float32List
+      final dataList = dataPtr.asTypedList(tensorShapeElementCount);
+
+      // Free the allocated pointer
       calloc.free(dataPtrPtr);
+
+      // Return the data as a List<num> (or directly as Float32List for performance)
+      return dataList;
     } else if (tensorElementType == ONNXTensorElementDataType.double) {
       final dataPtrPtr = calloc<ffi.Pointer<ffi.Double>>();
       final dataPtr = _getTensorMutableData(ortValuePtr, dataPtrPtr);

@@ -59,17 +59,28 @@ extension ListShape on List {
   }
 
   List<List<List<T>>> _reshape3<T>(List<int> shape) {
-    var flatList = flatten<T>();
-    List<List<List<T>>> reshapedList = List.generate(
-      shape[0],
-      (i) => List.generate(
-        shape[1],
-        (j) => List.generate(
-          shape[2],
-          (k) => flatList[i * shape[1] * shape[2] + j * shape[2] + k],
-        ),
-      ),
-    );
+    if (shape.length != 3) {
+      throw ArgumentError(
+          "Shape must have exactly three dimensions for _reshape3.");
+    }
+
+    final flatList = flatten<T>();
+    final dim0 = shape[0];
+    final dim1 = shape[1];
+    final dim2 = shape[2];
+
+    if (flatList.length != dim0 * dim1 * dim2) {
+      throw ArgumentError(
+          "The size of the flat list does not match the provided shape.");
+    }
+
+    List<List<List<T>>> reshapedList = List.generate(dim0, (i) {
+      final offset0 = i * dim1 * dim2;
+      return List.generate(dim1, (j) {
+        final offset1 = offset0 + j * dim2;
+        return flatList.sublist(offset1, offset1 + dim2);
+      });
+    });
 
     return reshapedList;
   }
@@ -140,16 +151,19 @@ extension ListShape on List {
   /// Flatten this list, [T] is element type
   /// if not specified List<dynamic> is returned
   List<T> flatten<T>() {
-    var flat = <T>[];
-    forEach((e) {
-      if (e is List) {
-        flat.addAll(e.flatten());
-      } else if (e is T) {
-        flat.add(e);
-      } else {
-        // Error with typing
+    final flat = <T>[];
+    final stack = <List>[this];
+
+    while (stack.isNotEmpty) {
+      final current = stack.removeLast();
+      for (final item in current) {
+        if (item is List) {
+          stack.add(item);
+        } else if (item is T) {
+          flat.add(item);
+        }
       }
-    });
+    }
     return flat;
   }
 
