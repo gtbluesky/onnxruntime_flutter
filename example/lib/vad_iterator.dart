@@ -60,6 +60,13 @@ class VadIterator {
       ..setInterOpNumThreads(1)
       ..setIntraOpNumThreads(1)
       ..setSessionGraphOptimizationLevel(GraphOptimizationLevel.ortEnableAll);
+    
+    // 🚀 Automatically select the best execution provider available!
+    // Priority: GPU (CUDA/DirectML/ROCm) > NPU (CoreML/NNAPI) > Optimized CPU (DNNL/XNNPACK) > CPU
+    // This will use GPU acceleration if available, otherwise falls back to CPU
+    // Now async so it doesn't block the UI thread during capability detection
+    await _sessionOptions!.appendDefaultProviders();
+    
     const assetFileName = 'assets/models/silero_vad.onnx';
     final rawAssetFile = await rootBundle.load(assetFileName);
     final bytes = rawAssetFile.buffer.asUint8List();

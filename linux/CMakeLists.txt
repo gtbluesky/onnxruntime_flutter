@@ -14,7 +14,20 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 # List of absolute paths to libraries that should be bundled with the plugin.
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
+#
+# Includes GPU-enabled library for CUDA, TensorRT, and ROCm acceleration.
+# The GPU library is optional - if CUDA/ROCm runtime is not available,
+# ONNX Runtime will gracefully fall back to CPU execution.
 set(onnxruntime_bundled_libraries
-  "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime.so.1.15.1"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime.so.1.22.0"
   PARENT_SCOPE
 )
+
+# Optional: Use GPU-enabled library instead
+# Note: GPU library is located in thirdparty/onnxruntime-linux-x64-gpu-1.22.0/lib/
+# Copy it to the linux/ directory and uncomment below to enable GPU support:
+#
+# "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime.so.1.22.0"  # Replace with GPU version
+# "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime_providers_cuda.so"
+# "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime_providers_shared.so"
+# "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime_providers_tensorrt.so"

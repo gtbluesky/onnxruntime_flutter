@@ -12,7 +12,7 @@ final DynamicLibrary _dylib = () {
   }
 
   if (Platform.isMacOS) {
-    return DynamicLibrary.open('libonnxruntime.1.15.1.dylib');
+    return DynamicLibrary.open('libonnxruntime.1.22.0.dylib');
   }
 
   if (Platform.isWindows) {
@@ -20,7 +20,7 @@ final DynamicLibrary _dylib = () {
   }
 
   if (Platform.isLinux) {
-    return DynamicLibrary.open('libonnxruntime.so.1.15.1');
+    return DynamicLibrary.open('libonnxruntime.so.1.22.0');
   }
 
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
