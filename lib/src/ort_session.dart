@@ -320,6 +320,40 @@ class OrtSessionOptions {
     OrtStatus.checkOrtStatus(statusPtr);
   }
 
+  /// Disables the CPU memory arena for this session.
+  ///
+  /// The arena is a pooling allocator that never releases memory back to the
+  /// OS for the lifetime of the session — useful for hot, tightly-looped
+  /// inference where allocator reuse matters, but it means a session's peak
+  /// working-set size stays permanently resident even when idle. Disabling
+  /// it trades a small amount of per-call allocation overhead (real
+  /// malloc/free instead of pooled reuse) for memory that is actually
+  /// returned to the OS between calls. Most useful for sessions that run
+  /// infrequently (e.g. once per user action) rather than in a hot loop.
+  void disableCpuMemArena() {
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.DisableCpuMemArena
+        .asFunction<
+            bg.OrtStatusPtr Function(
+                ffi.Pointer<bg.OrtSessionOptions>)>()(_ptr);
+    OrtStatus.checkOrtStatus(statusPtr);
+  }
+
+  /// Disables the memory pattern optimization for this session.
+  ///
+  /// When enabled (the default), ORT traces the internal allocation pattern
+  /// for a given input shape so repeat calls with that same shape can reuse
+  /// one big preallocated chunk. This only pays off when inputs recur with
+  /// the same shape; for inputs with varying shapes (e.g. variable-length
+  /// text), ORT ends up building and retaining a separate pattern per shape
+  /// seen, which can grow memory usage over time instead of saving it.
+  void disableMemPattern() {
+    final statusPtr = OrtEnv.instance.ortApiPtr.ref.DisableMemPattern
+        .asFunction<
+            bg.OrtStatusPtr Function(
+                ffi.Pointer<bg.OrtSessionOptions>)>()(_ptr);
+    OrtStatus.checkOrtStatus(statusPtr);
+  }
+
   bool _appendExecutionProvider(OrtProvider provider, OrtFlags flags) {
     var result = false;
     bg.OrtStatusPtr? statusPtr;
