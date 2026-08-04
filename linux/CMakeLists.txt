@@ -15,6 +15,6 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
 set(onnxruntime_bundled_libraries
-  "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime.so.1.15.1"
+  "${CMAKE_CURRENT_SOURCE_DIR}/libonnxruntime.so.1.23.0"
   PARENT_SCOPE
 )

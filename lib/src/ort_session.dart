@@ -391,6 +391,9 @@ class OrtSessionOptions {
       case OrtProvider.xnnpack:
         providerName = 'XNNPACK';
         break;
+      case OrtProvider.coreml:
+        providerName = 'CoreML';
+        break;
       default:
         return false;
     }
@@ -427,6 +430,16 @@ class OrtSessionOptions {
   /// Appends CoreML provider.
   bool appendCoreMLProvider(CoreMLFlags flags) {
     return _appendExecutionProvider(OrtProvider.coreml, flags);
+  }
+
+  /// Appends CoreML provider via the newer options-map API, which accepts
+  /// keys the legacy flags-based [appendCoreMLProvider] cannot express —
+  /// notably `MLComputeUnits: CPUAndGPU`, which excludes the Neural Engine
+  /// while keeping GPU acceleration (the flags API can only pick CPU-only vs.
+  /// everything, i.e. CPU+GPU+ANE). See
+  /// https://onnxruntime.ai/docs/execution-providers/CoreML-ExecutionProvider.html
+  bool appendCoreMLProviderV2(Map<String, String> providerOptions) {
+    return _appendExecutionProvider2(OrtProvider.coreml, providerOptions);
   }
 
   /// Appends Nnapi provider.
