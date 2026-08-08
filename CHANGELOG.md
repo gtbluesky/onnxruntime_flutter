@@ -1,3 +1,7 @@
+## Unreleased
+
+* Adds `OrtSessionOptions.disableCpuMemArena()` and `OrtSessionOptions.disableMemPattern()`, wrapping the existing native `DisableCpuMemArena`/`DisableMemPattern` ORT C API calls. Useful for sessions that run infrequently and variable-shaped inputs, where the default arena/mem-pattern behavior retains memory without a matching reuse benefit.
+
 ## 1.4.1
 
 * Fixes a memory leak when creating tensor.
